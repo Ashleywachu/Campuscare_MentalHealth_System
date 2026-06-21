@@ -10,9 +10,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
-
-/*TOKENS  */
-
 :root{
     --purple-950:#2e1065;
     --purple-800:#4c1d95;
@@ -42,8 +39,6 @@ body{
     overflow:hidden;
 }
 
-/* BACKGROUND VIDEO  */
-
 .bg-video{
     position:fixed;
     inset:0;
@@ -61,8 +56,6 @@ body{
     z-index:1;
 }
 
-/* PAGE GRID */
-
 .page{
     position:relative;
     z-index:2;
@@ -78,19 +71,11 @@ body{
 }
 
 @media (max-width:768px){
-    .page{
-        grid-template-columns:1fr;
-        padding:30px 20px;
-        gap:32px;
-    }
+    .page{ grid-template-columns:1fr; padding:30px 20px; gap:32px; }
     .left-panel{ display:none; }
 }
 
-/* LEFT PANEL — simplified: brand + portal title only */
-
-.left-panel{
-    color:white;
-}
+.left-panel{ color:white; }
 
 .brand{
     display:flex;
@@ -99,10 +84,7 @@ body{
     margin-bottom:52px;
 }
 
-.brand i{
-    font-size:28px;
-    color:#c4b5fd;
-}
+.brand i{ font-size:28px; color:#c4b5fd; }
 
 .brand-text h2{
     font-family:'Space Grotesk', sans-serif;
@@ -110,10 +92,7 @@ body{
     letter-spacing:0.2px;
 }
 
-.brand-text span{
-    font-size:13px;
-    color:#c4b5fd;
-}
+.brand-text span{ font-size:13px; color:#c4b5fd; }
 
 .left-panel h1{
     font-family:'Space Grotesk', sans-serif;
@@ -122,12 +101,7 @@ body{
     color:white;
 }
 
-.left-panel h1 em{
-    font-style:normal;
-    color:#c4b5fd;
-}
-
-/* LOGIN CARD */
+.left-panel h1 em{ font-style:normal; color:#c4b5fd; }
 
 .login-card{
     background:white;
@@ -139,12 +113,7 @@ body{
     box-shadow:0 30px 80px rgba(46,16,101,0.35);
 }
 
-/* CARD HEADER */
-
-.card-header{
-    text-align:center;
-    margin-bottom:30px;
-}
+.card-header{ text-align:center; margin-bottom:30px; }
 
 .avatar-ring{
     width:64px;
@@ -166,12 +135,7 @@ body{
     margin-bottom:6px;
 }
 
-.card-header p{
-    font-size:13.5px;
-    color:#6b7280;
-}
-
-/* ROLE BADGE */
+.card-header p{ font-size:13.5px; color:#6b7280; }
 
 .role-badge{
     display:inline-flex;
@@ -186,11 +150,7 @@ body{
     margin-top:8px;
 }
 
-/* FORM */
-
-.form-group{
-    margin-bottom:18px;
-}
+.form-group{ margin-bottom:18px; }
 
 .form-group label{
     display:block;
@@ -200,9 +160,7 @@ body{
     margin-bottom:7px;
 }
 
-.input-wrap{
-    position:relative;
-}
+.input-wrap{ position:relative; }
 
 .input-wrap i.prefix{
     position:absolute;
@@ -247,8 +205,6 @@ body{
 
 .toggle-pw:hover{ color:#6b7280; }
 
-/* ERROR */
-
 .error-msg{
     display:none;
     background:#fef2f2;
@@ -264,8 +220,6 @@ body{
 }
 
 .error-msg.show{ display:flex; }
-
-/* SUBMIT BUTTON */
 
 .login-btn{
     width:100%;
@@ -287,7 +241,6 @@ body{
 }
 
 .login-btn:hover{ background:var(--purple-700); }
-
 .login-btn:active{ transform:scale(0.98); }
 
 .login-btn .spinner{
@@ -303,11 +256,7 @@ body{
 .login-btn.loading .btn-label{ display:none; }
 .login-btn.loading .spinner{ display:block; }
 
-@keyframes spin{
-    to{ transform:rotate(360deg); }
-}
-
-/* BACK LINK */
+@keyframes spin{ to{ transform:rotate(360deg); } }
 
 .back-link{
     display:flex;
@@ -322,8 +271,6 @@ body{
 }
 
 .back-link:hover{ color:var(--purple-600); }
-
-/* DIVIDER */
 
 .divider{
     display:flex;
@@ -340,8 +287,6 @@ body{
     height:1px;
     background:#e5e7eb;
 }
-
-/* DEMO CREDENTIALS BOX */
 
 .demo-box{
     background:var(--purple-50);
@@ -383,13 +328,11 @@ body{
     margin-top:6px;
     text-align:right;
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- BACKGROUND -->
 <video class="bg-video" autoplay muted loop playsinline>
     <source src="https://assets.mixkit.co/8loet5evlfphyh1nkru55pzh84ek" type="video/mp4">
 </video>
@@ -397,10 +340,7 @@ body{
 
 <div class="page">
 
-    <!---LEFT PANEL — simplified -->
-
     <div class="left-panel">
-
         <div class="brand">
             <i class="fa-solid fa-heart"></i>
             <div class="brand-text">
@@ -408,15 +348,10 @@ body{
                 <span>Mental Health Support</span>
             </div>
         </div>
-
         <h1>Student<br><em>Portal</em></h1>
-
     </div>
 
-    <!-- LOGIN CARD  -->
-
     <div class="login-card">
-
         <div class="card-header">
             <div class="avatar-ring">
                 <i class="fa-solid fa-user-graduate"></i>
@@ -429,15 +364,13 @@ body{
             </div>
         </div>
 
-        <!-- ERROR MESSAGE -->
         <div class="error-msg" id="errorMsg">
             <i class="fa-solid fa-circle-exclamation"></i>
             <span id="errorText">Incorrect username or password.</span>
         </div>
 
-        <!-- FORM -->
         <div class="form-group">
-            <label for="username">Username</label>
+            <label for="username">Admission / Student ID</label>
             <div class="input-wrap">
                 <i class="fa-solid fa-user prefix"></i>
                 <input type="text" id="username" placeholder="ADM-2024-001" autocomplete="username">
@@ -456,7 +389,7 @@ body{
         </div>
 
         <button class="login-btn" id="loginBtn" onclick="login()">
-            <span class="btn-label"><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Sign In</span>
+            <span class="btn-label"><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Log In</span>
             <span class="spinner"></span>
         </button>
 
@@ -469,7 +402,7 @@ body{
         <div class="demo-box">
             <strong>Development / Demo Access</strong>
             <div class="cred">
-                <span>Username</span>
+                <span>Admission No</span>
                 <span class="val" onclick="fillDemo('username', 'ADM-2024-001')">ADM-2024-001</span>
             </div>
             <div class="cred">
@@ -478,91 +411,86 @@ body{
             </div>
             <p class="copy-hint"><i class="fa-solid fa-hand-pointer"></i> Click a value to fill it in</p>
         </div>
-
     </div>
 
 </div>
 
 <script>
+function login() {
+    const admission = document.getElementById('username').value.trim();
+    const password  = document.getElementById('password').value;
+    const btn       = document.getElementById('loginBtn');
+    const errBox    = document.getElementById('errorMsg');
+    const errText   = document.getElementById('errorText');
 
-/* CREDENTIALS Replace these with a real backend auth call when ready. */
-
-const VALID_CREDENTIALS = {
-    username: 'ADM-2024-001',
-    password: 'student123'
-};
-
-/*LOGIN LOGIC */
-
-function login(){
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
-    const btn      = document.getElementById('loginBtn');
-    const errBox   = document.getElementById('errorMsg');
-    const errText  = document.getElementById('errorText');
-
-    // Clear previous error
     errBox.classList.remove('show');
 
-    // Basic empty-field check
-    if(!username || !password){
-        errText.textContent = 'Please enter your username and password.';
+    if (!admission || !password) {
+        errText.textContent = 'Please enter your Admission ID and password.';
         errBox.classList.add('show');
         return;
     }
 
-    // Show loading state
     btn.classList.add('loading');
     btn.disabled = true;
 
-    // Simulate a short auth delay (replace with real fetch() call)
-    setTimeout(() => {
+    const formData = new FormData();
+    formData.append('admission_no', admission);
+    formData.append('password', password);
 
-        if(username === VALID_CREDENTIALS.username && password === VALID_CREDENTIALS.password){
-            // Correct — redirect to portal
+    fetch('student-login.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Store everything the portal needs in sessionStorage
+            sessionStorage.setItem('loggedIn',    'true');
+            sessionStorage.setItem('userName',    data.name);
+            sessionStorage.setItem('admissionNo', admission);
+            sessionStorage.setItem('userAvatar',  data.avatar || '');
             window.location.href = 'student-portal.html';
-        }else{
-            // Wrong credentials
+        } else {
             btn.classList.remove('loading');
             btn.disabled = false;
-            errText.textContent = 'Incorrect username or password. Please try again.';
+            errText.textContent = data.message || 'Incorrect admission number or password.';
             errBox.classList.add('show');
-
-            // Shake the card slightly
-            const card = document.querySelector('.login-card');
-            card.style.animation = 'none';
-            card.style.transform = 'translateX(-6px)';
-            setTimeout(() => card.style.transform = 'translateX(6px)', 80);
-            setTimeout(() => card.style.transform = 'translateX(-4px)', 160);
-            setTimeout(() => card.style.transform = 'translateX(0)',    240);
+            shakeCard();
         }
-
-    }, 900);
+    })
+    .catch(() => {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        errText.textContent = 'Cannot connect to server. Please check your connection.';
+        errBox.classList.add('show');
+    });
 }
 
-/*PASSWORD TOGGLE */
+function shakeCard() {
+    const card = document.querySelector('.login-card');
+    card.style.transform = 'translateX(-6px)';
+    setTimeout(() => card.style.transform = 'translateX(6px)',  80);
+    setTimeout(() => card.style.transform = 'translateX(-4px)', 160);
+    setTimeout(() => card.style.transform = 'translateX(0)',    240);
+}
 
-function togglePassword(){
-    const input   = document.getElementById('password');
-    const icon    = document.getElementById('eyeIcon');
+function togglePassword() {
+    const input = document.getElementById('password');
+    const icon  = document.getElementById('eyeIcon');
     const visible = input.type === 'text';
     input.type    = visible ? 'password' : 'text';
     icon.className = visible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
 }
 
-/*DEMO CREDENTIAL FILL */
-
-function fillDemo(field, value){
+function fillDemo(field, value) {
     document.getElementById(field).value = value;
     document.getElementById(field).focus();
 }
 
-/*ENTER KEY SUPPORT*/
-
 document.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter') login();
+    if (e.key === 'Enter') login();
 });
-
 </script>
 
 </body>

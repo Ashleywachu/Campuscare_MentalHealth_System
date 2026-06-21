@@ -11,39 +11,6 @@
 </head>
 <body>
 
-<!--LOGIN OVERLAY-->
-<div class="login-overlay" id="loginOverlay">
-    <div class="login-box">
-        <div class="login-logo">
-            <i class="fa-solid fa-stethoscope"></i>
-            <h2>CampusCare</h2>
-        </div>
-        <h3>Counselor Sign In</h3>
-        <p class="login-sub">Staff access only — use your staff credentials</p>
-
-        <div class="demo-hint">
-            <strong>Demo credentials</strong><br>
-            Staff ID: <strong>CSL-001</strong> &nbsp;|&nbsp; Password: <strong>counsel123</strong>
-        </div>
-
-        <div class="login-field">
-            <label for="staffIdInput">Staff / Counselor ID</label>
-            <input type="text" id="staffIdInput" placeholder="e.g. CSL-001" autocomplete="username">
-        </div>
-        <div class="login-field">
-            <label for="staffPassInput">Password</label>
-            <input type="password" id="staffPassInput" placeholder="Enter your password" autocomplete="current-password">
-        </div>
-        <p class="login-error" id="loginError">
-            <i class="fa-solid fa-circle-exclamation"></i> Incorrect credentials. Please try again.
-        </p>
-        <button class="login-btn" onclick="handleLogin()">
-            <i class="fa-solid fa-right-to-bracket"></i> Sign In
-        </button>
-        <p class="login-note">Trouble signing in? Contact your IT administrator.</p>
-    </div>
-</div>
-
 
 <!--TOP NAV-->
 <nav class="c-nav">
@@ -103,8 +70,8 @@
                 <img id="heroAvatar" class="c-hero-avatar" src="https://i.pravatar.cc/80?img=33" alt="Counselor">
                 <div class="c-hero-text">
                     <p class="eyebrow">Counselor Portal</p>
-                    <h1 id="heroName">Welcome, Dr. Conrad Hugo</h1>
-                    <p class="hero-sub" id="heroSub">You have 3 pending student requests today.</p>
+                    <h1 id="heroName">Welcome</h1>
+                    <p class="hero-sub" id="heroSub">Loading your dashboard…</p>
                 </div>
             </div>
             <div class="c-stat-pills">
@@ -178,7 +145,7 @@
 </div>
 
 
-<!-- ══════════ SESSIONS ══════════ -->
+<!--SESSIONS-->
 <div id="sessions" class="c-page">
     <div class="c-page-header">
         <p class="eyebrow">Attendance</p>
@@ -205,7 +172,7 @@
 </div>
 
 
-<!-- ══════════ WELLNESS TRENDS ══════════ -->
+<!-- WELLNESS TRENDS -->
 <div id="trends" class="c-page">
     <div class="c-page-header">
         <p class="eyebrow">Analytics</p>
@@ -217,7 +184,7 @@
 </div>
 
 
-<!-- ══════════ NOTES ══════════ -->
+<!-- NOTES -->
 <div id="notes" class="c-page">
     <div class="c-page-header">
         <p class="eyebrow">Confidential</p>
@@ -255,7 +222,7 @@
 </div>
 
 
-<!-- ══════════ PROFILE ══════════ -->
+<!-- PROFILE -->
 <div id="profile" class="c-page">
     <div class="c-page-header">
         <p class="eyebrow">Your Account</p>
@@ -318,7 +285,7 @@
 </div>
 
 
-<!-- ── TOAST ─────────────────────────────────────────────── -->
+<!-- TOAST -->
 <div class="toast" id="toast">
     <i class="fa-solid fa-circle-check"></i>
     <span id="toastMsg">Saved</span>
@@ -326,14 +293,7 @@
 
 
 <script>
-/* ═══════════════════════════════════════════════════════
-   DEMO DATA
-═══════════════════════════════════════════════════════ */
-const DEMO_COUNSELORS = {
-    'CSL-001': { password: 'counsel123', title: 'Dr.', name: 'Conrad Hugo', avatar: 'https://i.pravatar.cc/80?img=33', dept: 'Student Wellness Centre', email: 'c.hugo@campus.ac.ke' },
-    'CSL-002': { password: 'counsel123', title: 'Ms.', name: 'Grace Adhiambo', avatar: 'https://i.pravatar.cc/80?img=21', dept: 'Mental Health Unit', email: 'g.adhiambo@campus.ac.ke' }
-};
-
+/* DEMO DATA */
 const STUDENTS = [
     { id: 'ADM-2024-001', name: 'Amanda Wanjiru',   avatar: 'https://i.pravatar.cc/80?img=47', score: 29, risk: 'critical', trend: [58,45,39,29] },
     { id: 'ADM-2024-002', name: 'Brian Otieno',     avatar: 'https://i.pravatar.cc/80?img=12', score: 42, risk: 'support',  trend: [70,65,55,42] },
@@ -357,62 +317,30 @@ const SESSIONS = [
     { studentId: 'ADM-2024-005', name: 'Esther Njoroge',  avatar: 'https://i.pravatar.cc/40?img=44', date: 'June 17, 2026', time: '3:30 PM',  attendance: 'attended' },
 ];
 
-/* ═══════════════════════════════════════════════════════
-   LOGIN
-═══════════════════════════════════════════════════════ */
-function handleLogin() {
-    const id   = document.getElementById('staffIdInput').value.trim().toUpperCase();
-    const pass = document.getElementById('staffPassInput').value;
-    const err  = document.getElementById('loginError');
-    const user = DEMO_COUNSELORS[id];
-
-    if (user && user.password === pass) {
-        err.style.display = 'none';
-        sessionStorage.setItem('cLoggedIn', 'true');
-        sessionStorage.setItem('cId', id);
-        sessionStorage.setItem('cName', user.name);
-        sessionStorage.setItem('cTitle', user.title);
-        sessionStorage.setItem('cAvatar', user.avatar);
-        sessionStorage.setItem('cEmail', user.email);
-        sessionStorage.setItem('cDept', user.dept);
-        document.getElementById('loginOverlay').style.display = 'none';
-        initPortal(user);
-    } else {
-        err.style.display = 'block';
-        document.getElementById('staffPassInput').value = '';
-    }
-}
-
-document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') handleLogin();
-});
-
-function signOut() {
+/* LOG OUT */
+function logOut() {
     sessionStorage.clear();
-    document.getElementById('loginOverlay').style.display = 'flex';
-    document.getElementById('staffIdInput').value = '';
-    document.getElementById('staffPassInput').value = '';
+    window.location.href = 'counselor-login.html';
 }
 
-/* ═══════════════════════════════════════════════════════
-   INIT PORTAL
-═══════════════════════════════════════════════════════ */
+/* INIT PORTAL */
 function initPortal(user) {
-    const fullTitle = user.title + ' ' + user.name;
+    const fullTitle = (user.title ? user.title + ' ' : '') + user.name;
     const pendingCount = REQUESTS.filter(r => r.status === 'pending').length;
 
-    // Hero / nav
     document.getElementById('heroName').textContent  = 'Welcome, ' + fullTitle;
     document.getElementById('heroSub').textContent   = 'You have ' + pendingCount + ' pending student request' + (pendingCount !== 1 ? 's' : '') + ' today.';
-    document.getElementById('heroAvatar').src        = user.avatar;
-    document.getElementById('navAvatar').src         = user.avatar;
+    if (user.avatar) {
+        document.getElementById('heroAvatar').src = user.avatar;
+        document.getElementById('navAvatar').src  = user.avatar;
+    }
 
     // Profile form
-    document.getElementById('pfName').value  = user.name;
-    document.getElementById('pfEmail').value = user.email;
-    document.getElementById('pfDept').value  = user.dept;
-    document.getElementById('pfTitle').value = user.title;
-    document.getElementById('profileAvatarPreview').src = user.avatar;
+    document.getElementById('pfName').value  = user.name  || '';
+    document.getElementById('pfEmail').value = user.email || '';
+    document.getElementById('pfDept').value  = user.dept  || '';
+    if (user.title) document.getElementById('pfTitle').value = user.title;
+    if (user.avatar) document.getElementById('profileAvatarPreview').src = user.avatar;
 
     // Override with saved avatar
     const savedPic = localStorage.getItem('cAvatar_' + sessionStorage.getItem('cId'));
@@ -420,7 +348,6 @@ function initPortal(user) {
         ['heroAvatar','navAvatar','profileAvatarPreview'].forEach(id => { document.getElementById(id).src = savedPic; });
     }
 
-    // Render everything
     renderDashRequests();
     renderDashRisk();
     renderFullRequests();
@@ -430,13 +357,10 @@ function initPortal(user) {
     populateNoteSelect();
     loadSavedNotes();
 
-    // Badge
     document.getElementById('reqBadge').textContent = pendingCount;
 }
 
-/* ═══════════════════════════════════════════════════════
-   TAB SWITCHING
-═══════════════════════════════════════════════════════ */
+/* TAB SWITCHING */
 function switchTab(id, btn) {
     document.querySelectorAll('.c-page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -447,9 +371,7 @@ function switchTab(id, btn) {
     window.scrollTo(0, 0);
 }
 
-/* ═══════════════════════════════════════════════════════
-   RENDER HELPERS
-═══════════════════════════════════════════════════════ */
+/* RENDER HELPERS */
 function riskLabel(r) {
     if (r === 'critical') return 'Critical';
     if (r === 'support')  return 'Needs Support';
@@ -470,7 +392,7 @@ function renderStudentCard(s, actions = '') {
     </div>`;
 }
 
-/* ── DASHBOARD ── */
+/* DASHBOARD */
 function renderDashRequests() {
     const pending = REQUESTS.filter(r => r.status === 'pending').slice(0, 3);
     const el = document.getElementById('dashRequestList');
@@ -485,7 +407,7 @@ function renderDashRisk() {
     ).join('');
 }
 
-/* ── REQUESTS ── */
+/* REQUESTS */
 function reqCard(r, compact = false) {
     const isNew = r.status === 'pending';
     return `
@@ -511,7 +433,7 @@ function renderFullRequests() {
     document.getElementById('fullRequestList').innerHTML = REQUESTS.map(r => reqCard(r)).join('');
 }
 
-/* ── STUDENTS ── */
+/* STUDENTS */
 function renderFullStudents() {
     document.getElementById('fullStudentList').innerHTML = STUDENTS.map(s =>
         renderStudentCard(s, `
@@ -525,7 +447,7 @@ function renderFullStudents() {
     ).join('');
 }
 
-/* ── SESSIONS ── */
+/*SESSIONS*/
 function renderSessions() {
     document.getElementById('sessionsBody').innerHTML = SESSIONS.map((s, i) => {
         const attClass = s.attendance === 'attended' ? 'att-attended' : s.attendance === 'missed' ? 'att-missed' : 'att-pending';
@@ -559,7 +481,7 @@ function renderSessions() {
     }).join('');
 }
 
-/* ── WELLNESS TRENDS ── */
+/* WELLNESS TRENDS */
 const trendCharts = {};
 
 function renderTrends() {
@@ -579,7 +501,6 @@ function renderTrends() {
         </div>
     `).join('');
 
-    // Slight delay so canvases are in DOM
     setTimeout(() => {
         STUDENTS.forEach(s => {
             const ctx = document.getElementById('chart-' + s.id);
@@ -613,7 +534,7 @@ function renderTrends() {
     }, 50);
 }
 
-/* ── NOTES ── */
+/* NOTES */
 function populateNoteSelect() {
     const sel = document.getElementById('noteStudent');
     sel.innerHTML = '<option value="">— Select student —</option>';
@@ -658,9 +579,7 @@ function loadSavedNotes() {
     `).join('');
 }
 
-/* ═══════════════════════════════════════════════════════
-   ACTIONS
-═══════════════════════════════════════════════════════ */
+/* ACTIONS */
 function acceptRequest(reqId) {
     const r = REQUESTS.find(x => x.id === reqId);
     if (r) {
@@ -692,11 +611,10 @@ function updateBadge() {
 function markAttendance(index, status) {
     SESSIONS[index].attendance = status;
     renderSessions();
-    const name = SESSIONS[index].name;
-    showToast(name + ' marked as ' + status + '.');
+    showToast(SESSIONS[index].name + ' marked as ' + status + '.');
 }
 
-/* ── PROFILE ── */
+/* PROFILE */
 function handleAvatarUpload(input) {
     const file = input.files[0];
     if (!file) return;
@@ -724,7 +642,7 @@ function setAvail(btn, val) {
     btn.classList.add('selected-avail');
 }
 
-/* ── TOAST ── */
+/* TOAST */
 function showToast(msg) {
     const t = document.getElementById('toast');
     document.getElementById('toastMsg').textContent = msg;
@@ -732,22 +650,22 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-/* ═══════════════════════════════════════════════════════
-   PAGE LOAD
-═══════════════════════════════════════════════════════ */
+/* PAGE LOAD */
 window.onload = function () {
-    if (sessionStorage.getItem('cLoggedIn') === 'true') {
-        const id    = sessionStorage.getItem('cId');
-        const user  = {
-            title:  sessionStorage.getItem('cTitle'),
-            name:   sessionStorage.getItem('cName'),
-            avatar: sessionStorage.getItem('cAvatar'),
-            email:  sessionStorage.getItem('cEmail'),
-            dept:   sessionStorage.getItem('cDept'),
-        };
-        document.getElementById('loginOverlay').style.display = 'none';
-        initPortal(user);
+    // Guard: redirect to login if not authenticated
+    if (sessionStorage.getItem('cLoggedIn') !== 'true') {
+        window.location.href = 'counselor-login.html';
+        return;
     }
+
+    const user = {
+        title:  sessionStorage.getItem('cTitle'),
+        name:   sessionStorage.getItem('cName'),
+        avatar: sessionStorage.getItem('cAvatar') || null,
+        email:  sessionStorage.getItem('cEmail'),
+        dept:   sessionStorage.getItem('cDept'),
+    };
+    initPortal(user);
 };
 </script>
 </body>

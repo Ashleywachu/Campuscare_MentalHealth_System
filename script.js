@@ -149,6 +149,7 @@ function deleteUser(i){
     renderUsers();
 }
 
+
 /*RENDER: STATS + DONUT*/
 
 function renderStats(){

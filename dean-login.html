@@ -568,50 +568,43 @@ const VALID_CREDENTIALS = {
 
 /*LOGIN LOGIC */
 
-function handleLogin(){
-    const email    = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const btn      = document.getElementById('loginBtn');
-    const errBox   = document.getElementById('errorMsg');
-    const errText  = document.getElementById('errorText');
+function handleLogin() {
+    const staffId  = document.getElementById('staffIdInput').value.trim();
+    const password = document.getElementById('staffPassInput').value;
+    const errorEl  = document.getElementById('loginError');
 
-    // Clear previous error
-    errBox.classList.remove('show');
-
-    // Basic empty-field check
-    if(!email || !password){
-        errText.textContent = 'Please enter your email and password.';
-        errBox.classList.add('show');
+    if (!staffId || !password) {
+        errorEl.textContent = 'Please fill in all fields.';
+        errorEl.style.display = 'block';
         return;
     }
 
-    // Show loading state
-    btn.classList.add('loading');
-    btn.disabled = true;
+    const formData = new FormData();
+    formData.append('staff_id', staffId);
+    formData.append('password', password);
 
-    // Simulate a short auth delay (replace with real fetch() call)
-    setTimeout(() => {
-
-        if(email === VALID_CREDENTIALS.email && password === VALID_CREDENTIALS.password){
-            // Correct — redirect to portal
-            window.location.href = 'dean-portal.html';
-        }else{
-            // Wrong credentials
-            btn.classList.remove('loading');
-            btn.disabled = false;
-            errText.textContent = 'Incorrect email or password. Please try again.';
-            errBox.classList.add('show');
-
-            // Shake the card slightly
-            const card = document.querySelector('.login-card');
-            card.style.animation = 'none';
-            card.style.transform = 'translateX(-6px)';
-            setTimeout(() => card.style.transform = 'translateX(6px)', 80);
-            setTimeout(() => card.style.transform = 'translateX(-4px)', 160);
-            setTimeout(() => card.style.transform = 'translateX(0)',    240);
+    fetch('counselor-login.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Store in sessionStorage for the portal to read
+            sessionStorage.setItem('cLoggedIn', 'true');
+            sessionStorage.setItem('staffId',    data.staff_id);
+            sessionStorage.setItem('fullname', data.full_name);
+            sessionStorage.setItem('Email', data.email);
+            window.location.href = 'counselor-portal.html';
+        } else {
+            errorEl.textContent = data.message;
+            errorEl.style.display = 'block';
         }
-
-    }, 900);
+    })
+    .catch(() => {
+        errorEl.textContent = 'Cannot connect to server. Check XAMPP is running.';
+        errorEl.style.display = 'block';
+    });
 }
 
 /*PASSWORD TOGGLE */

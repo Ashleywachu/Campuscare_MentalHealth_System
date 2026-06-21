@@ -559,59 +559,55 @@ body{
 
 <script>
 
-/* CREDENTIALS  Replace these with a real backend auth call when ready. */
+/* CREDENTIALS*/
 
 const VALID_CREDENTIALS = {
-    email:    'admin',
-    password: '1234'
+    username:    'admin',
+    password: 'Admin@2026',
+
+    username2: 'sysop',
+    password2: 'Admin@2026'
 };
 
 /* LOGIN LOGIC */
 
-function handleLogin(){
-    const email    = document.getElementById('email').value.trim();
+function handleLogin() {
+    const username  = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
-    const btn      = document.getElementById('loginBtn');
-    const errBox   = document.getElementById('errorMsg');
-    const errText  = document.getElementById('errorText');
+    const errorEl  = document.getElementById('errorMsg');
 
-    // Clear previous error
-    errBox.classList.remove('show');
-
-    // Basic empty-field check
-    if(!email || !password){
-        errText.textContent = 'Please enter your email and password.';
-        errBox.classList.add('show');
+    if (!username || !password) {
+        errorEl.textContent = 'Please fill in all fields.';
+        errorEl.style.display = 'block';
         return;
     }
 
-    // Show loading state
-    btn.classList.add('loading');
-    btn.disabled = true;
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('password', password);
 
-    // Simulate a short auth delay (replace with real fetch() call)
-    setTimeout(() => {
-
-        if(email === VALID_CREDENTIALS.email && password === VALID_CREDENTIALS.password){
-            // Correct — redirect to portal
-            localStorage.setItem('adminLoggedIn', true); window.location.href = 'admin-portal.html';
-        }else{
-            // Wrong credentials
-            btn.classList.remove('loading');
-            btn.disabled = false;
-            errText.textContent = 'Incorrect username or password. Please try again.';
-            errBox.classList.add('show');
-
-            // Shake the card slightly
-            const card = document.querySelector('.login-card');
-            card.style.animation = 'none';
-            card.style.transform = 'translateX(-6px)';
-            setTimeout(() => card.style.transform = 'translateX(6px)', 80);
-            setTimeout(() => card.style.transform = 'translateX(-4px)', 160);
-            setTimeout(() => card.style.transform = 'translateX(0)',    240);
+    fetch('admin-login.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Store in sessionStorage for the portal to read
+            sessionStorage.setItem('aLoggedIn', 'true');
+            sessionStorage.setItem('username',    data.username);
+            sessionStorage.setItem('fullname', data.full_name);
+            sessionStorage.setItem('Email', data.email);
+            window.location.href = 'admin-portal.html';
+        } else {
+            errorEl.textContent = data.message;
+            errorEl.style.display = 'block';
         }
-
-    }, 900);
+    })
+    .catch(() => {
+        errorEl.textContent = 'Cannot connect to server. Check XAMPP is running.';
+        errorEl.style.display = 'block';
+    });
 }
 
 /* PASSWORD TOGGLE */

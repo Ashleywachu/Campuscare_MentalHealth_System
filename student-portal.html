@@ -9,179 +9,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="studentportal.css">
-
-<style>
-/* ── LOGIN OVERLAY ──────────────────────────────────────── */
-.login-overlay {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 60%, #a78bfa 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-}
-
-.login-box {
-    background: #fff;
-    border-radius: 28px;
-    padding: 48px 40px;
-    width: 100%;
-    max-width: 420px;
-    box-shadow: 0 32px 80px rgba(109,40,217,0.25);
-    text-align: center;
-}
-
-.login-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 28px;
-}
-
-.login-logo i { font-size: 28px; color: #8b5cf6; }
-.login-logo h2 { font-size: 22px; font-weight: 700; color: #6d28d9; }
-
-.login-box h3 {
-    font-size: 20px;
-    color: #3d1d77;
-    margin-bottom: 6px;
-}
-
-.login-box p.login-sub {
-    font-size: 13px;
-    color: #999;
-    margin-bottom: 28px;
-}
-
-.login-field {
-    text-align: left;
-    margin-bottom: 16px;
-}
-
-.login-field label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: #555;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.login-field input {
-    width: 100%;
-    padding: 13px 16px;
-    border: 1.5px solid #e8e2f7;
-    border-radius: 14px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    outline: none;
-    background: #faf7ff;
-    color: #333;
-    transition: border-color 0.2s;
-}
-
-.login-field input:focus { border-color: #8b5cf6; }
-
-.login-error {
-    font-size: 13px;
-    color: #dc2626;
-    margin-bottom: 14px;
-    display: none;
-}
-
-.login-btn {
-    width: 100%;
-    padding: 14px;
-    background: #8b5cf6;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.login-btn:hover { background: #6d28d9; }
-
-.login-note {
-    font-size: 12px;
-    color: #bbb;
-    margin-top: 20px;
-    line-height: 1.6;
-}
-
-/* demo hint badge */
-.demo-hint {
-    background: #f5f0ff;
-    border: 1px solid #e0d7f7;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 24px;
-    font-size: 12px;
-    color: #7c3aed;
-    text-align: left;
-    line-height: 1.7;
-}
-
-.demo-hint strong { font-weight: 600; }
-</style>
 </head>
 
 <body>
 
-<!-- ── LOGIN OVERLAY ─────────────────────────────────────── -->
-<div class="login-overlay" id="loginOverlay">
-    <div class="login-box">
-        <div class="login-logo">
-            <i class="fa-solid fa-heart"></i>
-            <h2>CampusCare</h2>
-        </div>
-
-        <h3>Student Sign In</h3>
-        <p class="login-sub">Use your university credentials to continue</p>
-
-        <div class="demo-hint">
-            <strong>Demo mode</strong><br>
-            Admission no: <strong>ADM-2024-001</strong><br>
-            Password: <strong>demo123</strong>
-        </div>
-
-        <div class="login-field">
-            <label for="admissionInput">Admission / Student ID</label>
-            <input type="text" id="admissionInput" placeholder="e.g. ADM-2024-001" autocomplete="username">
-        </div>
-
-        <div class="login-field">
-            <label for="passwordInput">Password</label>
-            <input type="password" id="passwordInput" placeholder="Enter your password" autocomplete="current-password">
-        </div>
-
-        <p class="login-error" id="loginError">
-            <i class="fa-solid fa-circle-exclamation"></i> Incorrect credentials. Please try again.
-        </p>
-
-        <button class="login-btn" onclick="handleLogin()">
-            <i class="fa-solid fa-right-to-bracket"></i> Sign In
-        </button>
-
-        <p class="login-note">
-            Having trouble? Contact your university IT helpdesk.<br>
-            Your data is private and securely stored.
-        </p>
-    </div>
-</div>
-
-
-<!-- ── TOP NAV ──────────────────────────────────────────── -->
+<!--TOP NAV-->
 <nav class="portal-nav">
     <a href="Home.html" class="nav-logo">
         <i class="fa-solid fa-heart"></i>
@@ -225,7 +57,7 @@
 </nav>
 
 
-<!-- ══════════ DASHBOARD ══════════ -->
+<!--DASHBOARD-->
 <div id="dashboard" class="portal-page active">
 
     <!-- Greeting Banner -->
@@ -237,7 +69,7 @@
                 <img id="greetingAvatar" class="greeting-avatar" src="https://i.pravatar.cc/80?img=47" alt="Profile photo">
                 <div class="greeting-text">
                     <p class="eyebrow">Welcome back</p>
-                    <h1 id="greetingName">Amanda Stacy</h1>
+                    <h1 id="greetingName">Student</h1>
                     <p class="student-sub" id="studentSub">Good to see you </p>
                 </div>
             </div>
@@ -304,8 +136,8 @@
                 <div class="profile-row">
                     <img id="profilePreview" class="profile-avatar" src="https://i.pravatar.cc/60?img=47" alt="Profile">
                     <div>
-                        <p class="profile-name" id="usernameDisplay">Amanda Stacy</p>
-                        <p class="profile-sub" id="admissionDisplay">ADM-2024-001 · CampusCare Member</p>
+                        <p class="profile-name" id="usernameDisplay">Student</p>
+                        <p class="profile-sub" id="admissionDisplay">CampusCare Member</p>
                     </div>
                 </div>
 
@@ -492,69 +324,31 @@
 
 
 <script>
-/* ── DEMO USER DATABASE ─────────────────────────────────── */
-const DEMO_USERS = {
-    'ADM-2024-001': {
-        password: 'demo123',
-        name: 'Amanda Stacy',
-        avatar: 'https://i.pravatar.cc/80?img=47'
-    },
-    'ADM-2024-002': {
-        password: 'demo123',
-        name: 'Brian Fisher',
-        avatar: 'https://i.pravatar.cc/80?img=12'
-    },
-    'ADM-2024-003': {
-        password: 'demo123',
-        name: 'Cynthia Mwangi',
-        avatar: 'https://i.pravatar.cc/80?img=25'
+/*TAB SWITCHING*/
+function switchTab(id, btn) {
+    document.querySelectorAll('.portal-page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) {
+        document.querySelectorAll('.portal-tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
     }
-};
-
-/* ── LOGIN ──────────────────────────────────────────────── */
-function handleLogin() {
-    const admission = document.getElementById('admissionInput').value.trim().toUpperCase();
-    const password  = document.getElementById('passwordInput').value;
-    const errorEl   = document.getElementById('loginError');
-
-    const user = DEMO_USERS[admission];
-
-    if (user && user.password === password) {
-        errorEl.style.display = 'none';
-
-        // Store session
-        sessionStorage.setItem('loggedIn', 'true');
-        sessionStorage.setItem('userName', user.name);
-        sessionStorage.setItem('admissionNo', admission);
-        sessionStorage.setItem('userAvatar', user.avatar);
-
-        document.getElementById('loginOverlay').style.display = 'none';
-        initPortal(user.name, admission, user.avatar);
-    } else {
-        errorEl.style.display = 'block';
-        document.getElementById('passwordInput').value = '';
-    }
+    window.scrollTo(0, 0);
 }
 
-// Allow Enter key to submit
-document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') {
-        handleLogin();
-    }
-});
+function openCheckin() {
+    window.location.href = 'student-checkin.html';
+}
 
 function signOut() {
     sessionStorage.clear();
-    document.getElementById('loginOverlay').style.display = 'flex';
-    document.getElementById('admissionInput').value = '';
-    document.getElementById('passwordInput').value = '';
+    window.location.href = 'student-login.html';
 }
 
-/* ── INIT PORTAL after login ────────────────────────────── */
+/*INIT PORTAL after login*/
 function initPortal(name, admission, avatar) {
     // Greeting banner
     document.getElementById('greetingName').textContent = name;
-    document.getElementById('greetingAvatar').src = avatar;
+    if (avatar) document.getElementById('greetingAvatar').src = avatar;
 
     // Profile card
     document.getElementById('usernameDisplay').textContent = name;
@@ -565,10 +359,12 @@ function initPortal(name, admission, avatar) {
     document.getElementById('admissionReadonly').value = admission;
 
     // All avatars
-    ['navAvatar', 'profilePreview', 'settingsAvatar'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.src = avatar;
-    });
+    if (avatar) {
+        ['navAvatar', 'profilePreview', 'settingsAvatar'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.src = avatar;
+        });
+    }
 
     // Override with saved profile pic if any
     const savedPic  = localStorage.getItem('profilePic_' + admission);
@@ -586,22 +382,7 @@ function initPortal(name, admission, avatar) {
     }
 }
 
-/* ── TAB SWITCHING ──────────────────────────────────────── */
-function switchTab(id, btn) {
-    document.querySelectorAll('.portal-page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if (btn) {
-        document.querySelectorAll('.portal-tabs button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-    window.scrollTo(0, 0);
-}
-
-function openCheckin() {
-    window.location.href = 'student-checkin.html';
-}
-
-/* ── AFFIRMATIONS ───────────────────────────────────────── */
+/*AFFIRMATIONS*/
 const affirmations = [
     'You are stronger than your struggles.',
     'Progress matters more than perfection.',
@@ -625,7 +406,7 @@ function loadAffirmation() {
     }, 150);
 }
 
-/* ── PROFILE ────────────────────────────────────────────── */
+/*PROFILE*/
 function handleAvatarUpload(input) {
     const file = input.files[0];
     if (!file) return;
@@ -652,13 +433,13 @@ function saveProfile() {
     }
 }
 
-/* ── DARK MODE ──────────────────────────────────────────── */
+/*DARK MODE*/
 function toggleTheme() {
     document.body.classList.toggle('dark');
     localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
 }
 
-/* ── CHART ──────────────────────────────────────────────── */
+/*CHART*/
 function loadHistoryGraph() {
     const history = JSON.parse(localStorage.getItem('checkinHistory') || '[]');
     if (history.length === 0) return;
@@ -704,7 +485,7 @@ function loadHistoryGraph() {
     });
 }
 
-/* ── JOURNAL ────────────────────────────────────────────── */
+/*JOURNAL*/
 function selectMood(btn) {
     document.querySelectorAll('#moodChips .chip').forEach(c => c.classList.remove('selected'));
     btn.classList.add('selected');
@@ -726,20 +507,22 @@ function saveJournal() {
     setTimeout(() => confirm.style.display = 'none', 3000);
 }
 
-/* ── INIT ───────────────────────────────────────────────── */
+/*INIT */
 window.onload = function () {
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark');
     }
 
-    // Resume session if already logged in
-    if (sessionStorage.getItem('loggedIn') === 'true') {
-        const name     = sessionStorage.getItem('userName');
-        const admission = sessionStorage.getItem('admissionNo');
-        const avatar   = sessionStorage.getItem('userAvatar');
-        document.getElementById('loginOverlay').style.display = 'none';
-        initPortal(name, admission, avatar);
+    // Guard: redirect to login if not authenticated
+    if (sessionStorage.getItem('loggedIn') !== 'true') {
+        window.location.href = 'student-login.html';
+        return;
     }
+
+    const name      = sessionStorage.getItem('userName');
+    const admission = sessionStorage.getItem('admissionNo');
+    const avatar    = sessionStorage.getItem('userAvatar');
+    initPortal(name, admission, avatar);
 
     loadAffirmation();
     loadHistoryGraph();
