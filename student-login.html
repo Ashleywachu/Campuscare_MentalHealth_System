@@ -1,32 +1,568 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Student Login</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Login | CampusCare</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+
+/*TOKENS  */
+
+:root{
+    --purple-950:#2e1065;
+    --purple-800:#4c1d95;
+    --purple-700:#5b21b6;
+    --purple-600:#6d28d9;
+    --purple-500:#7c3aed;
+    --purple-400:#8b5cf6;
+    --purple-300:#a78bfa;
+    --purple-100:#ede9fe;
+    --purple-50:#faf5ff;
+}
+
+@media (prefers-reduced-motion: reduce){
+    .bg-video{ display:none; }
+    body{ background:#2e1065; }
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body{
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#2e1065;
+    overflow:hidden;
+}
+
+/* BACKGROUND VIDEO  */
+
+.bg-video{
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:100vh;
+    object-fit:cover;
+    z-index:0;
+    opacity:0.35;
+}
+
+.bg-overlay{
+    position:fixed;
+    inset:0;
+    background:linear-gradient(135deg, rgba(46,16,101,0.92) 0%, rgba(109,40,217,0.75) 100%);
+    z-index:1;
+}
+
+/* PAGE GRID */
+
+.page{
+    position:relative;
+    z-index:2;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    min-height:100vh;
+    width:100%;
+    max-width:1100px;
+    margin:0 auto;
+    padding:40px;
+    gap:60px;
+    align-items:center;
+}
+
+@media (max-width:768px){
+    .page{
+        grid-template-columns:1fr;
+        padding:30px 20px;
+        gap:32px;
+    }
+    .left-panel{ display:none; }
+}
+
+/* LEFT PANEL — simplified: brand + portal title only */
+
+.left-panel{
+    color:white;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:52px;
+}
+
+.brand i{
+    font-size:28px;
+    color:#c4b5fd;
+}
+
+.brand-text h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:22px;
+    letter-spacing:0.2px;
+}
+
+.brand-text span{
+    font-size:13px;
+    color:#c4b5fd;
+}
+
+.left-panel h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:42px;
+    line-height:1.2;
+    color:white;
+}
+
+.left-panel h1 em{
+    font-style:normal;
+    color:#c4b5fd;
+}
+
+/* LOGIN CARD */
+
+.login-card{
+    background:white;
+    border-radius:24px;
+    padding:40px 36px;
+    width:100%;
+    max-width:420px;
+    margin:0 auto;
+    box-shadow:0 30px 80px rgba(46,16,101,0.35);
+}
+
+/* CARD HEADER */
+
+.card-header{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.avatar-ring{
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background:var(--purple-100);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 16px;
+    font-size:26px;
+    color:var(--purple-600);
+}
+
+.card-header h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:22px;
+    color:var(--purple-950);
+    margin-bottom:6px;
+}
+
+.card-header p{
+    font-size:13.5px;
+    color:#6b7280;
+}
+
+/* ROLE BADGE */
+
+.role-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    background:var(--purple-100);
+    color:var(--purple-700);
+    font-size:12px;
+    font-weight:600;
+    padding:5px 14px;
+    border-radius:30px;
+    margin-top:8px;
+}
+
+/* FORM */
+
+.form-group{
+    margin-bottom:18px;
+}
+
+.form-group label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:#374151;
+    margin-bottom:7px;
+}
+
+.input-wrap{
+    position:relative;
+}
+
+.input-wrap i.prefix{
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#9ca3af;
+    font-size:14px;
+}
+
+.input-wrap input{
+    width:100%;
+    padding:12px 14px 12px 40px;
+    border:1.5px solid #e5e7eb;
+    border-radius:11px;
+    font-size:14px;
+    font-family:'Inter', sans-serif;
+    background:#f9fafb;
+    color:#1f2937;
+    transition:0.2s;
+}
+
+.input-wrap input:focus{
+    outline:none;
+    border-color:var(--purple-400);
+    background:white;
+    box-shadow:0 0 0 3px rgba(139,92,246,0.12);
+}
+
+.toggle-pw{
+    position:absolute;
+    right:14px;
+    top:50%;
+    transform:translateY(-50%);
+    border:none;
+    background:none;
+    color:#9ca3af;
+    cursor:pointer;
+    font-size:14px;
+    padding:0;
+}
+
+.toggle-pw:hover{ color:#6b7280; }
+
+/* ERROR */
+
+.error-msg{
+    display:none;
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    border-left:3px solid #dc2626;
+    color:#b91c1c;
+    font-size:13px;
+    padding:11px 14px;
+    border-radius:9px;
+    margin-bottom:16px;
+    align-items:center;
+    gap:9px;
+}
+
+.error-msg.show{ display:flex; }
+
+/* SUBMIT BUTTON */
+
+.login-btn{
+    width:100%;
+    padding:14px;
+    background:var(--purple-600);
+    color:white;
+    border:none;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:600;
+    font-family:'Space Grotesk', sans-serif;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    transition:0.2s;
+    margin-top:4px;
+}
+
+.login-btn:hover{ background:var(--purple-700); }
+
+.login-btn:active{ transform:scale(0.98); }
+
+.login-btn .spinner{
+    display:none;
+    width:16px;
+    height:16px;
+    border:2px solid rgba(255,255,255,0.35);
+    border-top-color:white;
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+}
+
+.login-btn.loading .btn-label{ display:none; }
+.login-btn.loading .spinner{ display:block; }
+
+@keyframes spin{
+    to{ transform:rotate(360deg); }
+}
+
+/* BACK LINK */
+
+.back-link{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    margin-top:22px;
+    font-size:13px;
+    color:#6b7280;
+    text-decoration:none;
+    transition:0.15s;
+}
+
+.back-link:hover{ color:var(--purple-600); }
+
+/* DIVIDER */
+
+.divider{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:20px 0;
+    color:#d1d5db;
+    font-size:12px;
+}
+
+.divider::before, .divider::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:#e5e7eb;
+}
+
+/* DEMO CREDENTIALS BOX */
+
+.demo-box{
+    background:var(--purple-50);
+    border:1px dashed var(--purple-300);
+    border-radius:11px;
+    padding:13px 16px;
+    font-size:12.5px;
+    color:var(--purple-800);
+}
+
+.demo-box strong{
+    display:block;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--purple-500);
+    margin-bottom:7px;
+}
+
+.demo-box .cred{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:4px;
+}
+
+.demo-box .val{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    cursor:pointer;
+    color:var(--purple-700);
+    font-weight:600;
+}
+
+.demo-box .val:hover{ text-decoration:underline; }
+
+.copy-hint{
+    font-size:11px;
+    color:var(--purple-400);
+    margin-top:6px;
+    text-align:right;
+}
+
+</style>
 </head>
 
 <body>
 
-<video autoplay muted loop id="bgVideo">
-<source src="image/login illustration.mp4" type="video/mp4">
+<!-- BACKGROUND -->
+<video class="bg-video" autoplay muted loop playsinline>
+    <source src="https://assets.mixkit.co/8loet5evlfphyh1nkru55pzh84ek" type="video/mp4">
 </video>
+<div class="bg-overlay"></div>
 
-<div class="login-box">
+<div class="page">
 
-<h2>Student Login</h2>
+    <!---LEFT PANEL — simplified -->
 
-<input type="text" placeholder="Username">
+    <div class="left-panel">
 
-<input type="password" placeholder="Password">
+        <div class="brand">
+            <i class="fa-solid fa-heart"></i>
+            <div class="brand-text">
+                <h2>CampusCare</h2>
+                <span>Mental Health Support</span>
+            </div>
+        </div>
 
-<button onclick="login()">Login</button>
+        <h1>Student<br><em>Portal</em></h1>
+
+    </div>
+
+    <!-- LOGIN CARD  -->
+
+    <div class="login-card">
+
+        <div class="card-header">
+            <div class="avatar-ring">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <h2>Welcome Back</h2>
+            <p>Sign in to your student account</p>
+            <div class="role-badge">
+                <i class="fa-solid fa-shield-halved"></i>
+                Student Access
+            </div>
+        </div>
+
+        <!-- ERROR MESSAGE -->
+        <div class="error-msg" id="errorMsg">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="errorText">Incorrect username or password.</span>
+        </div>
+
+        <!-- FORM -->
+        <div class="form-group">
+            <label for="username">Username</label>
+            <div class="input-wrap">
+                <i class="fa-solid fa-user prefix"></i>
+                <input type="text" id="username" placeholder="ADM-2024-001" autocomplete="username">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+                <i class="fa-solid fa-lock prefix"></i>
+                <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+                <button class="toggle-pw" type="button" onclick="togglePassword()" tabindex="-1">
+                    <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <button class="login-btn" id="loginBtn" onclick="login()">
+            <span class="btn-label"><i class="fa-solid fa-right-to-bracket"></i> &nbsp;Sign In</span>
+            <span class="spinner"></span>
+        </button>
+
+        <a href="Home.html" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to CampusCare Home
+        </a>
+
+        <div class="divider">demo credentials</div>
+
+        <div class="demo-box">
+            <strong>Development / Demo Access</strong>
+            <div class="cred">
+                <span>Username</span>
+                <span class="val" onclick="fillDemo('username', 'ADM-2024-001')">ADM-2024-001</span>
+            </div>
+            <div class="cred">
+                <span>Password</span>
+                <span class="val" onclick="fillDemo('password', 'student123')">student123</span>
+            </div>
+            <p class="copy-hint"><i class="fa-solid fa-hand-pointer"></i> Click a value to fill it in</p>
+        </div>
+
+    </div>
 
 </div>
 
 <script>
+
+/* CREDENTIALS Replace these with a real backend auth call when ready. */
+
+const VALID_CREDENTIALS = {
+    username: 'ADM-2024-001',
+    password: 'student123'
+};
+
+/*LOGIN LOGIC */
+
 function login(){
-window.location.href="student-portal.html";
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const btn      = document.getElementById('loginBtn');
+    const errBox   = document.getElementById('errorMsg');
+    const errText  = document.getElementById('errorText');
+
+    // Clear previous error
+    errBox.classList.remove('show');
+
+    // Basic empty-field check
+    if(!username || !password){
+        errText.textContent = 'Please enter your username and password.';
+        errBox.classList.add('show');
+        return;
+    }
+
+    // Show loading state
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    // Simulate a short auth delay (replace with real fetch() call)
+    setTimeout(() => {
+
+        if(username === VALID_CREDENTIALS.username && password === VALID_CREDENTIALS.password){
+            // Correct — redirect to portal
+            window.location.href = 'student-portal.html';
+        }else{
+            // Wrong credentials
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            errText.textContent = 'Incorrect username or password. Please try again.';
+            errBox.classList.add('show');
+
+            // Shake the card slightly
+            const card = document.querySelector('.login-card');
+            card.style.animation = 'none';
+            card.style.transform = 'translateX(-6px)';
+            setTimeout(() => card.style.transform = 'translateX(6px)', 80);
+            setTimeout(() => card.style.transform = 'translateX(-4px)', 160);
+            setTimeout(() => card.style.transform = 'translateX(0)',    240);
+        }
+
+    }, 900);
 }
+
+/*PASSWORD TOGGLE */
+
+function togglePassword(){
+    const input   = document.getElementById('password');
+    const icon    = document.getElementById('eyeIcon');
+    const visible = input.type === 'text';
+    input.type    = visible ? 'password' : 'text';
+    icon.className = visible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+}
+
+/*DEMO CREDENTIAL FILL */
+
+function fillDemo(field, value){
+    document.getElementById(field).value = value;
+    document.getElementById(field).focus();
+}
+
+/*ENTER KEY SUPPORT*/
+
+document.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') login();
+});
+
 </script>
 
 </body>
