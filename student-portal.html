@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal | CampusCare</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="studentportal.css">
+
+<style>
+/* ── LOGIN OVERLAY ──────────────────────────────────────── */
+.login-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 60%, #a78bfa 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.login-box {
+    background: #fff;
+    border-radius: 28px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 32px 80px rgba(109,40,217,0.25);
+    text-align: center;
+}
+
+.login-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.login-logo i { font-size: 28px; color: #8b5cf6; }
+.login-logo h2 { font-size: 22px; font-weight: 700; color: #6d28d9; }
+
+.login-box h3 {
+    font-size: 20px;
+    color: #3d1d77;
+    margin-bottom: 6px;
+}
+
+.login-box p.login-sub {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 28px;
+}
+
+.login-field {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.login-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.login-field input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid #e8e2f7;
+    border-radius: 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    outline: none;
+    background: #faf7ff;
+    color: #333;
+    transition: border-color 0.2s;
+}
+
+.login-field input:focus { border-color: #8b5cf6; }
+
+.login-error {
+    font-size: 13px;
+    color: #dc2626;
+    margin-bottom: 14px;
+    display: none;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: #8b5cf6;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.login-btn:hover { background: #6d28d9; }
+
+.login-note {
+    font-size: 12px;
+    color: #bbb;
+    margin-top: 20px;
+    line-height: 1.6;
+}
+
+/* demo hint badge */
+.demo-hint {
+    background: #f5f0ff;
+    border: 1px solid #e0d7f7;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    color: #7c3aed;
+    text-align: left;
+    line-height: 1.7;
+}
+
+.demo-hint strong { font-weight: 600; }
+</style>
+</head>
+
+<body>
+
+<!-- ── LOGIN OVERLAY ─────────────────────────────────────── -->
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+        <div class="login-logo">
+            <i class="fa-solid fa-heart"></i>
+            <h2>CampusCare</h2>
+        </div>
+
+        <h3>Student Sign In</h3>
+        <p class="login-sub">Use your university credentials to continue</p>
+
+        <div class="demo-hint">
+            <strong>Demo mode</strong><br>
+            Admission no: <strong>ADM-2024-001</strong><br>
+            Password: <strong>demo123</strong>
+        </div>
+
+        <div class="login-field">
+            <label for="admissionInput">Admission / Student ID</label>
+            <input type="text" id="admissionInput" placeholder="e.g. ADM-2024-001" autocomplete="username">
+        </div>
+
+        <div class="login-field">
+            <label for="passwordInput">Password</label>
+            <input type="password" id="passwordInput" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+
+        <p class="login-error" id="loginError">
+            <i class="fa-solid fa-circle-exclamation"></i> Incorrect credentials. Please try again.
+        </p>
+
+        <button class="login-btn" onclick="handleLogin()">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        </button>
+
+        <p class="login-note">
+            Having trouble? Contact your university IT helpdesk.<br>
+            Your data is private and securely stored.
+        </p>
+    </div>
+</div>
+
+
+<!-- ── TOP NAV ──────────────────────────────────────────── -->
+<nav class="portal-nav">
+    <a href="Home.html" class="nav-logo">
+        <i class="fa-solid fa-heart"></i>
+        <div>
+            <h2>CampusCare</h2>
+            <p>Student Portal</p>
+        </div>
+    </a>
+
+    <ul class="portal-tabs">
+        <li>
+            <button class="active" onclick="switchTab('dashboard', this)">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </button>
+        </li>
+        <li>
+            <button onclick="openCheckin()">
+                <i class="fa-solid fa-clipboard-check"></i> Check-In
+            </button>
+        </li>
+        <li>
+            <button onclick="switchTab('journal', this)">
+                <i class="fa-solid fa-pen-fancy"></i> Journal
+            </button>
+        </li>
+        <li>
+            <button onclick="switchTab('settings', this)">
+                <i class="fa-solid fa-gear"></i> Settings
+            </button>
+        </li>
+    </ul>
+
+    <div class="nav-right">
+        <a href="Home.html" class="home-link">
+            <i class="fa-solid fa-arrow-left"></i> Main Site
+        </a>
+        <div class="avatar-btn" onclick="switchTab('settings', null)">
+            <img id="navAvatar" src="https://i.pravatar.cc/40?img=47" alt="Profile">
+        </div>
+    </div>
+</nav>
+
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="dashboard" class="portal-page active">
+
+    <!-- Greeting Banner -->
+    <div class="greeting-banner">
+        <div class="greeting-inner">
+
+            <!-- Profile + Name -->
+            <div class="greeting-profile">
+                <img id="greetingAvatar" class="greeting-avatar" src="https://i.pravatar.cc/80?img=47" alt="Profile photo">
+                <div class="greeting-text">
+                    <p class="eyebrow">Welcome back</p>
+                    <h1 id="greetingName">Amanda Stacy</h1>
+                    <p class="student-sub" id="studentSub">Good to see you </p>
+                </div>
+            </div>
+
+            <!-- Affirmation -->
+            <div class="affirmation-pill">
+                <p class="pill-label">
+                    <i class="fa-solid fa-sun"></i> Today's affirmation
+                </p>
+                <p id="affirmationText">Loading…</p>
+                <button class="refresh-affirmation" onclick="loadAffirmation()">
+                    <i class="fa-solid fa-rotate-right"></i> New affirmation
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Dashboard Body -->
+    <div class="dashboard-body">
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="action-card" onclick="openCheckin()">
+                <div class="action-icon purple"><i class="fa-solid fa-clipboard-check"></i></div>
+                <div class="action-text">
+                    <h4>Start Check-In</h4>
+                    <p>Log today's mood &amp; wellbeing</p>
+                </div>
+            </button>
+
+            <button class="action-card" onclick="switchTab('journal', null)">
+                <div class="action-icon green"><i class="fa-solid fa-pen-fancy"></i></div>
+                <div class="action-text">
+                    <h4>Open Journal</h4>
+                    <p>Write your thoughts privately</p>
+                </div>
+            </button>
+
+            <button class="action-card" onclick="window.location.href='Resources.html'">
+                <div class="action-icon orange"><i class="fa-solid fa-book-open"></i></div>
+                <div class="action-text">
+                    <h4>Resources</h4>
+                    <p>Books, videos &amp; articles</p>
+                </div>
+            </button>
+
+            <button class="action-card" onclick="window.location.href='Contact.html'">
+                <div class="action-icon blue"><i class="fa-solid fa-phone"></i></div>
+                <div class="action-text">
+                    <h4>Get Support</h4>
+                    <p>Talk to a counsellor</p>
+                </div>
+            </button>
+        </div>
+
+        <!-- Two-column lower -->
+        <div class="dashboard-cols">
+
+            <!-- Profile + CTA -->
+            <div class="dash-card">
+                <h3><i class="fa-solid fa-user"></i> Your Profile</h3>
+
+                <div class="profile-row">
+                    <img id="profilePreview" class="profile-avatar" src="https://i.pravatar.cc/60?img=47" alt="Profile">
+                    <div>
+                        <p class="profile-name" id="usernameDisplay">Amanda Stacy</p>
+                        <p class="profile-sub" id="admissionDisplay">ADM-2024-001 · CampusCare Member</p>
+                    </div>
+                </div>
+
+                <div class="mood-today">
+                    <i class="fa-solid fa-face-smile"></i>
+                    How are you feeling today?
+                </div>
+
+                <button class="checkin-btn" onclick="openCheckin()">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                    Begin Mental Health Check-In
+                </button>
+            </div>
+
+            <!-- Progress Chart -->
+            <div class="dash-card">
+                <h3><i class="fa-solid fa-chart-line"></i> Wellbeing Progress</h3>
+
+                <div id="chartArea">
+                    <div class="no-data" id="noDataMsg">
+                        <i class="fa-solid fa-chart-bar"></i>
+                        <p>Complete a check-in to see your progress here.</p>
+                    </div>
+                    <div class="chart-wrap" id="chartWrap" style="display:none;">
+                        <canvas id="historyChart"></canvas>
+                    </div>
+                    <p id="latestScore" style="margin-top:12px;font-size:13px;color:#8b5cf6;font-weight:600;"></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════ JOURNAL ══════════ -->
+<div id="journal" class="portal-page">
+    <div class="journal-body">
+        <div class="page-header">
+            <p class="eyebrow">Private Space</p>
+            <h2>Your Journal</h2>
+        </div>
+
+        <div class="journal-grid">
+
+            <!-- Write -->
+            <div class="journal-card">
+                <h3><i class="fa-solid fa-pen"></i> Write an Entry</h3>
+
+                <p style="font-size:13px;color:#888;margin-bottom:14px;">How are you feeling right now?</p>
+
+                <div class="mood-chips" id="moodChips">
+                    <button class="chip" onclick="selectMood(this)"> Happy</button>
+                    <button class="chip" onclick="selectMood(this)"> Neutral</button>
+                    <button class="chip" onclick="selectMood(this)"> Sad</button>
+                    <button class="chip" onclick="selectMood(this)"> Anxious</button>
+                    <button class="chip" onclick="selectMood(this)"> Frustrated</button>
+                </div>
+
+                <textarea class="journal-textarea" id="journalEntry"
+                    placeholder="Write freely — this is your safe space. No one else can read this."></textarea>
+
+                <button class="save-btn" onclick="saveJournal()">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Entry
+                </button>
+                <div class="save-confirm" id="saveConfirm">
+                    <i class="fa-solid fa-circle-check"></i> Entry saved!
+                </div>
+            </div>
+
+            <!-- Prompts -->
+            <div class="journal-card">
+                <h3><i class="fa-solid fa-lightbulb"></i> Writing Prompts</h3>
+                <p style="font-size:13px;color:#888;margin-bottom:16px;">Tap a prompt to use it as a starting point.</p>
+
+                <ul class="prompts-list">
+                    <li onclick="usePrompt(this)">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        What is one thing that went well today, no matter how small?
+                    </li>
+                    <li onclick="usePrompt(this)">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        What emotion am I carrying right now, and where do I feel it?
+                    </li>
+                    <li onclick="usePrompt(this)">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        What would I tell a close friend going through what I am?
+                    </li>
+                    <li onclick="usePrompt(this)">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        What is one thing I can let go of today to feel lighter?
+                    </li>
+                    <li onclick="usePrompt(this)">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        Three things I am grateful for right now.
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════ SETTINGS ══════════ -->
+<div id="settings" class="portal-page">
+    <div class="settings-body">
+        <div class="page-header">
+            <p class="eyebrow">Preferences</p>
+            <h2>Your Settings</h2>
+        </div>
+
+        <div class="settings-grid">
+
+            <!-- Profile -->
+            <div class="settings-card">
+                <h3><i class="fa-solid fa-id-card"></i> Profile</h3>
+
+                <div class="avatar-upload-wrap">
+                    <img id="settingsAvatar" class="avatar-preview" src="https://i.pravatar.cc/70?img=47" alt="Profile">
+                    <label class="upload-label" for="profileUpload">
+                        <i class="fa-solid fa-camera"></i> Change photo
+                    </label>
+                    <input type="file" id="profileUpload" accept="image/*" onchange="handleAvatarUpload(this)">
+                </div>
+
+                <label class="field-label" for="usernameInput">Display Name</label>
+                <input class="settings-input" type="text" id="usernameInput" placeholder="Your name">
+
+                <label class="field-label">Admission Number</label>
+                <input class="settings-input" type="text" id="admissionReadonly" readonly
+                    style="opacity:0.6;cursor:not-allowed;">
+
+                <button class="settings-save" onclick="saveProfile()">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Profile
+                </button>
+            </div>
+
+            <!-- Appearance -->
+            <div class="settings-card">
+                <h3><i class="fa-solid fa-palette"></i> Appearance</h3>
+
+                <p style="font-size:14px;color:#666;line-height:1.7;margin-bottom:16px;">
+                    Switch between light and dark mode to suit your preference
+                    and reduce eye strain.
+                </p>
+
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fa-solid fa-circle-half-stroke"></i>
+                    Toggle Dark / Light Mode
+                </button>
+
+                <div style="margin-top:28px;padding-top:20px;border-top:1px solid #f0eaf8;">
+                    <h3 style="margin-bottom:8px;font-size:14px;">
+                        <i class="fa-solid fa-right-from-bracket" style="color:#dc2626;"></i>
+                        <span style="color:#dc2626;">Sign Out</span>
+                    </h3>
+                    <p style="font-size:13px;color:#888;line-height:1.6;margin-bottom:12px;">
+                        You will be returned to the login screen.
+                    </p>
+                    <button onclick="signOut()" style="
+                        padding:11px 22px;
+                        background:#fff;
+                        border:1.5px solid #fca5a5;
+                        color:#dc2626;
+                        border-radius:12px;
+                        font-family:'Poppins',sans-serif;
+                        font-size:13px;
+                        font-weight:600;
+                        cursor:pointer;
+                        display:flex;
+                        align-items:center;
+                        gap:7px;
+                        transition:background 0.2s;
+                    " onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+/* ── DEMO USER DATABASE ─────────────────────────────────── */
+const DEMO_USERS = {
+    'ADM-2024-001': {
+        password: 'demo123',
+        name: 'Amanda Stacy',
+        avatar: 'https://i.pravatar.cc/80?img=47'
+    },
+    'ADM-2024-002': {
+        password: 'demo123',
+        name: 'Brian Fisher',
+        avatar: 'https://i.pravatar.cc/80?img=12'
+    },
+    'ADM-2024-003': {
+        password: 'demo123',
+        name: 'Cynthia Mwangi',
+        avatar: 'https://i.pravatar.cc/80?img=25'
+    }
+};
+
+/* ── LOGIN ──────────────────────────────────────────────── */
+function handleLogin() {
+    const admission = document.getElementById('admissionInput').value.trim().toUpperCase();
+    const password  = document.getElementById('passwordInput').value;
+    const errorEl   = document.getElementById('loginError');
+
+    const user = DEMO_USERS[admission];
+
+    if (user && user.password === password) {
+        errorEl.style.display = 'none';
+
+        // Store session
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('userName', user.name);
+        sessionStorage.setItem('admissionNo', admission);
+        sessionStorage.setItem('userAvatar', user.avatar);
+
+        document.getElementById('loginOverlay').style.display = 'none';
+        initPortal(user.name, admission, user.avatar);
+    } else {
+        errorEl.style.display = 'block';
+        document.getElementById('passwordInput').value = '';
+    }
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') {
+        handleLogin();
+    }
+});
+
+function signOut() {
+    sessionStorage.clear();
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('admissionInput').value = '';
+    document.getElementById('passwordInput').value = '';
+}
+
+/* ── INIT PORTAL after login ────────────────────────────── */
+function initPortal(name, admission, avatar) {
+    // Greeting banner
+    document.getElementById('greetingName').textContent = name;
+    document.getElementById('greetingAvatar').src = avatar;
+
+    // Profile card
+    document.getElementById('usernameDisplay').textContent = name;
+    document.getElementById('admissionDisplay').textContent = admission + ' · CampusCare Member';
+
+    // Settings
+    document.getElementById('usernameInput').value = name;
+    document.getElementById('admissionReadonly').value = admission;
+
+    // All avatars
+    ['navAvatar', 'profilePreview', 'settingsAvatar'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.src = avatar;
+    });
+
+    // Override with saved profile pic if any
+    const savedPic  = localStorage.getItem('profilePic_' + admission);
+    const savedName = localStorage.getItem('username_' + admission);
+    if (savedPic) {
+        ['navAvatar', 'profilePreview', 'settingsAvatar', 'greetingAvatar'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.src = savedPic;
+        });
+    }
+    if (savedName) {
+        document.getElementById('greetingName').textContent = savedName;
+        document.getElementById('usernameDisplay').textContent = savedName;
+        document.getElementById('usernameInput').value = savedName;
+    }
+}
+
+/* ── TAB SWITCHING ──────────────────────────────────────── */
+function switchTab(id, btn) {
+    document.querySelectorAll('.portal-page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) {
+        document.querySelectorAll('.portal-tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    window.scrollTo(0, 0);
+}
+
+function openCheckin() {
+    window.location.href = 'student-checkin.html';
+}
+
+/* ── AFFIRMATIONS ───────────────────────────────────────── */
+const affirmations = [
+    'You are stronger than your struggles.',
+    'Progress matters more than perfection.',
+    'You deserve care and kindness — always.',
+    'Every day is a new beginning.',
+    'Your wellbeing comes first.',
+    'It is okay to rest. Rest is part of the journey.',
+    'You have survived every hard day so far.',
+    'Asking for help is a sign of strength.',
+    'One breath at a time. You have got this.',
+    'You are more than your grades or your worries.'
+];
+
+function loadAffirmation() {
+    const el = document.getElementById('affirmationText');
+    el.style.opacity = 0;
+    setTimeout(() => {
+        el.textContent = affirmations[Math.floor(Math.random() * affirmations.length)];
+        el.style.transition = 'opacity 0.4s';
+        el.style.opacity = 1;
+    }, 150);
+}
+
+/* ── PROFILE ────────────────────────────────────────────── */
+function handleAvatarUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const src = e.target.result;
+        const admission = sessionStorage.getItem('admissionNo');
+        if (admission) localStorage.setItem('profilePic_' + admission, src);
+        ['profilePreview', 'settingsAvatar', 'navAvatar', 'greetingAvatar'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.src = src;
+        });
+    };
+    reader.readAsDataURL(file);
+}
+
+function saveProfile() {
+    const name = document.getElementById('usernameInput').value.trim();
+    const admission = sessionStorage.getItem('admissionNo');
+    if (name && admission) {
+        localStorage.setItem('username_' + admission, name);
+        document.getElementById('usernameDisplay').textContent = name;
+        document.getElementById('greetingName').textContent = name;
+    }
+}
+
+/* ── DARK MODE ──────────────────────────────────────────── */
+function toggleTheme() {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+
+/* ── CHART ──────────────────────────────────────────────── */
+function loadHistoryGraph() {
+    const history = JSON.parse(localStorage.getItem('checkinHistory') || '[]');
+    if (history.length === 0) return;
+
+    document.getElementById('noDataMsg').style.display = 'none';
+    document.getElementById('chartWrap').style.display = 'block';
+
+    const dates  = history.map(h => h.date);
+    const scores = history.map(h => h.score);
+
+    document.getElementById('latestScore').textContent =
+        'Latest score: ' + scores[scores.length - 1] + '%';
+
+    new Chart(document.getElementById('historyChart'), {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Wellbeing Score (%)',
+                data: scores,
+                backgroundColor: 'rgba(139,92,246,0.25)',
+                borderColor: '#8b5cf6',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true, max: 100,
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    ticks: { font: { family: 'Poppins' } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { family: 'Poppins' } }
+                }
+            }
+        }
+    });
+}
+
+/* ── JOURNAL ────────────────────────────────────────────── */
+function selectMood(btn) {
+    document.querySelectorAll('#moodChips .chip').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+}
+
+function usePrompt(li) {
+    const text = li.textContent.trim().replace(/^→\s*/, '');
+    document.getElementById('journalEntry').value = text + '\n\n';
+    document.getElementById('journalEntry').focus();
+}
+
+function saveJournal() {
+    const entry = document.getElementById('journalEntry').value.trim();
+    if (!entry) return;
+    document.getElementById('journalEntry').value = '';
+    document.querySelectorAll('#moodChips .chip').forEach(c => c.classList.remove('selected'));
+    const confirm = document.getElementById('saveConfirm');
+    confirm.style.display = 'flex';
+    setTimeout(() => confirm.style.display = 'none', 3000);
+}
+
+/* ── INIT ───────────────────────────────────────────────── */
+window.onload = function () {
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+    }
+
+    // Resume session if already logged in
+    if (sessionStorage.getItem('loggedIn') === 'true') {
+        const name     = sessionStorage.getItem('userName');
+        const admission = sessionStorage.getItem('admissionNo');
+        const avatar   = sessionStorage.getItem('userAvatar');
+        document.getElementById('loginOverlay').style.display = 'none';
+        initPortal(name, admission, avatar);
+    }
+
+    loadAffirmation();
+    loadHistoryGraph();
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Counselor Portal | CampusCare</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="counselorportal.css">
+</head>
+<body>
+
+<!-- ══════════ LOGIN OVERLAY ══════════ -->
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+        <div class="login-logo">
+            <i class="fa-solid fa-stethoscope"></i>
+            <h2>CampusCare</h2>
+        </div>
+        <h3>Counselor Sign In</h3>
+        <p class="login-sub">Staff access only — use your staff credentials</p>
+
+        <div class="demo-hint">
+            <strong>Demo credentials</strong><br>
+            Staff ID: <strong>CSL-001</strong> &nbsp;|&nbsp; Password: <strong>counsel123</strong>
+        </div>
+
+        <div class="login-field">
+            <label for="staffIdInput">Staff / Counselor ID</label>
+            <input type="text" id="staffIdInput" placeholder="e.g. CSL-001" autocomplete="username">
+        </div>
+        <div class="login-field">
+            <label for="staffPassInput">Password</label>
+            <input type="password" id="staffPassInput" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+        <p class="login-error" id="loginError">
+            <i class="fa-solid fa-circle-exclamation"></i> Incorrect credentials. Please try again.
+        </p>
+        <button class="login-btn" onclick="handleLogin()">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        </button>
+        <p class="login-note">Trouble signing in? Contact your IT administrator.</p>
+    </div>
+</div>
+
+
+<!-- ══════════ TOP NAV ══════════ -->
+<nav class="c-nav">
+    <a href="Home.html" class="c-nav-logo">
+        <i class="fa-solid fa-stethoscope"></i>
+        <div>
+            <h2>CampusCare</h2>
+            <p>Counselor Portal</p>
+        </div>
+    </a>
+
+    <ul class="c-nav-tabs">
+        <li><button class="active" onclick="switchTab('dashboard', this)">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </button></li>
+        <li><button onclick="switchTab('requests', this)">
+            <i class="fa-solid fa-inbox"></i> Requests
+            <span class="badge" id="reqBadge">3</span>
+        </button></li>
+        <li><button onclick="switchTab('students', this)">
+            <i class="fa-solid fa-users"></i> My Students
+        </button></li>
+        <li><button onclick="switchTab('sessions', this)">
+            <i class="fa-solid fa-calendar-check"></i> Sessions
+        </button></li>
+        <li><button onclick="switchTab('trends', this)">
+            <i class="fa-solid fa-chart-line"></i> Wellness Trends
+        </button></li>
+        <li><button onclick="switchTab('notes', this)">
+            <i class="fa-solid fa-notes-medical"></i> Notes
+        </button></li>
+        <li><button onclick="switchTab('profile', this)">
+            <i class="fa-solid fa-id-badge"></i> Profile
+        </button></li>
+    </ul>
+
+    <div class="c-nav-right">
+        <a href="Home.html" class="home-link">
+            <i class="fa-solid fa-arrow-left"></i> Main Site
+        </a>
+        <button class="logout-btn" onclick="signOut()">
+            <i class="fa-solid fa-right-from-bracket"></i> Log Out
+        </button>
+        <div class="c-avatar-btn" onclick="switchTab('profile', null)">
+            <img id="navAvatar" src="https://i.pravatar.cc/40?img=33" alt="Profile">
+        </div>
+    </div>
+</nav>
+
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="dashboard" class="c-page active">
+
+    <div class="c-hero">
+        <div class="c-hero-inner">
+            <div class="c-hero-profile">
+                <img id="heroAvatar" class="c-hero-avatar" src="https://i.pravatar.cc/80?img=33" alt="Counselor">
+                <div class="c-hero-text">
+                    <p class="eyebrow">Counselor Portal</p>
+                    <h1 id="heroName">Welcome, Dr. Conrad Hugo</h1>
+                    <p class="hero-sub" id="heroSub">You have 3 pending student requests today.</p>
+                </div>
+            </div>
+            <div class="c-stat-pills">
+                <div class="stat-pill">
+                    <div class="s-num">24</div>
+                    <div class="s-label">Students</div>
+                </div>
+                <div class="stat-pill">
+                    <div class="s-num" id="statSessions">5</div>
+                    <div class="s-label">Sessions Today</div>
+                </div>
+                <div class="stat-pill" style="border-color:rgba(239,68,68,0.4);">
+                    <div class="s-num" style="color:#fca5a5;" id="statAlerts">3</div>
+                    <div class="s-label" style="color:#fca5a5;">High Risk</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="c-body">
+        <!-- Pending requests snapshot -->
+        <div class="section-header">
+            <h2><i class="fa-solid fa-inbox"></i> Pending Requests</h2>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('requests', null)">
+                View all <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+        <div class="c-card" style="margin-bottom:24px;">
+            <div class="request-list" id="dashRequestList"></div>
+        </div>
+
+        <!-- High risk students snapshot -->
+        <div class="section-header">
+            <h2><i class="fa-solid fa-triangle-exclamation"></i> High Risk Students</h2>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('students', null)">
+                All students <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+        <div class="c-card">
+            <div class="student-list" id="dashRiskList"></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════ REQUESTS ══════════ -->
+<div id="requests" class="c-page">
+    <div class="c-page-header">
+        <p class="eyebrow">Inbox</p>
+        <h2>Student Requests</h2>
+    </div>
+    <div class="c-body" style="margin-top:0; padding-top:0;">
+        <div class="c-card">
+            <div class="request-list" id="fullRequestList"></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════ MY STUDENTS ══════════ -->
+<div id="students" class="c-page">
+    <div class="c-page-header">
+        <p class="eyebrow">Assigned</p>
+        <h2>My Students</h2>
+    </div>
+    <div class="c-body" style="margin-top:0; padding-top:0;">
+        <div class="c-card">
+            <div class="student-list" id="fullStudentList"></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════ SESSIONS ══════════ -->
+<div id="sessions" class="c-page">
+    <div class="c-page-header">
+        <p class="eyebrow">Attendance</p>
+        <h2>Counseling Sessions</h2>
+    </div>
+    <div class="c-body" style="margin-top:0; padding-top:0;">
+        <div class="c-card">
+            <div style="overflow-x:auto;">
+                <table class="c-table" id="sessionsTable">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Attendance</th>
+                            <th>Mark</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessionsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════ WELLNESS TRENDS ══════════ -->
+<div id="trends" class="c-page">
+    <div class="c-page-header">
+        <p class="eyebrow">Analytics</p>
+        <h2>Wellness Trends</h2>
+    </div>
+    <div class="c-body" style="margin-top:0; padding-top:0;">
+        <div class="trend-grid" id="trendGrid"></div>
+    </div>
+</div>
+
+
+<!-- ══════════ NOTES ══════════ -->
+<div id="notes" class="c-page">
+    <div class="c-page-header">
+        <p class="eyebrow">Confidential</p>
+        <h2>Session Notes</h2>
+    </div>
+    <div class="c-body" style="margin-top:0; padding-top:0;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+            <div class="c-card">
+                <h3><i class="fa-solid fa-pen-to-square"></i> New Note</h3>
+                <div class="notes-block">
+                    <div class="note-student-select">
+                        <label style="font-size:13px;font-weight:600;color:#64748b;">Student:</label>
+                        <select class="c-select" id="noteStudent">
+                            <option value="">— Select student —</option>
+                        </select>
+                    </div>
+                    <textarea class="c-textarea" id="noteText"
+                        placeholder="Write confidential counseling notes here. Only you can see these."></textarea>
+                    <button class="btn btn-teal" onclick="saveNote()">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Note
+                    </button>
+                </div>
+            </div>
+
+            <div class="c-card">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Notes</h3>
+                <div class="saved-notes" id="savedNotesList">
+                    <p style="font-size:13px;color:#aaa;">No notes saved yet.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════ PROFILE ══════════ -->
+<div id="profile" class="c-page">
+    <div class="c-page-header">
+        <p class="eyebrow">Your Account</p>
+        <h2>Profile Settings</h2>
+    </div>
+    <div class="c-body" style="margin-top:0; padding-top:0;">
+        <div class="c-card">
+            <div class="avatar-upload-row" style="margin-bottom:24px;">
+                <img id="profileAvatarPreview" class="c-avatar-preview" src="https://i.pravatar.cc/70?img=33" alt="Profile">
+                <label class="upload-label" for="profileUploadInput">
+                    <i class="fa-solid fa-camera"></i> Change photo
+                </label>
+                <input type="file" id="profileUploadInput" accept="image/*" onchange="handleAvatarUpload(this)">
+            </div>
+
+            <div class="profile-form">
+                <div class="form-group">
+                    <label for="pfTitle">Title</label>
+                    <select class="c-input" id="pfTitle">
+                        <option>Dr.</option>
+                        <option>Mr.</option>
+                        <option>Ms.</option>
+                        <option>Mrs.</option>
+                        <option>Prof.</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="pfName">Full Name</label>
+                    <input class="c-input" type="text" id="pfName" placeholder="First and last name">
+                </div>
+                <div class="form-group">
+                    <label for="pfEmail">Email</label>
+                    <input class="c-input" type="email" id="pfEmail" placeholder="staff@university.ac.ke">
+                </div>
+                <div class="form-group">
+                    <label for="pfDept">Department</label>
+                    <input class="c-input" type="text" id="pfDept" placeholder="Student Wellness Centre">
+                </div>
+                <div class="form-group full">
+                    <label>Availability</label>
+                    <div class="avail-row">
+                        <button class="avail-opt selected-avail" onclick="setAvail(this,'Available')">
+                            <i class="fa-solid fa-circle" style="color:#10b981;font-size:9px;"></i> Available
+                        </button>
+                        <button class="avail-opt" onclick="setAvail(this,'Busy')">
+                            <i class="fa-solid fa-circle" style="color:#f59e0b;font-size:9px;"></i> Busy
+                        </button>
+                        <button class="avail-opt" onclick="setAvail(this,'Away')">
+                            <i class="fa-solid fa-circle" style="color:#94a3b8;font-size:9px;"></i> Away
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-teal" style="margin-top:24px;" onclick="saveProfile()">
+                <i class="fa-solid fa-floppy-disk"></i> Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ── TOAST ─────────────────────────────────────────────── -->
+<div class="toast" id="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg">Saved</span>
+</div>
+
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DEMO DATA
+═══════════════════════════════════════════════════════ */
+const DEMO_COUNSELORS = {
+    'CSL-001': { password: 'counsel123', title: 'Dr.', name: 'Conrad Hugo', avatar: 'https://i.pravatar.cc/80?img=33', dept: 'Student Wellness Centre', email: 'c.hugo@campus.ac.ke' },
+    'CSL-002': { password: 'counsel123', title: 'Ms.', name: 'Grace Adhiambo', avatar: 'https://i.pravatar.cc/80?img=21', dept: 'Mental Health Unit', email: 'g.adhiambo@campus.ac.ke' }
+};
+
+const STUDENTS = [
+    { id: 'ADM-2024-001', name: 'Amanda Wanjiru',   avatar: 'https://i.pravatar.cc/80?img=47', score: 29, risk: 'critical', trend: [58,45,39,29] },
+    { id: 'ADM-2024-002', name: 'Brian Otieno',     avatar: 'https://i.pravatar.cc/80?img=12', score: 42, risk: 'support',  trend: [70,65,55,42] },
+    { id: 'ADM-2024-003', name: 'Cynthia Mwangi',   avatar: 'https://i.pravatar.cc/80?img=25', score: 81, risk: 'stable',   trend: [60,70,75,81] },
+    { id: 'ADM-2024-004', name: 'David Kimani',     avatar: 'https://i.pravatar.cc/80?img=15', score: 67, risk: 'stable',   trend: [55,60,62,67] },
+    { id: 'ADM-2024-005', name: 'Esther Njoroge',   avatar: 'https://i.pravatar.cc/80?img=44', score: 35, risk: 'support',  trend: [65,50,44,35] },
+];
+
+const REQUESTS = [
+    { id: 'req1', studentId: 'ADM-2024-001', name: 'Amanda Wanjiru',  avatar: 'https://i.pravatar.cc/80?img=47', msg: 'Requesting an urgent session regarding exam anxiety.', date: 'Today, 9:14 AM',   status: 'pending' },
+    { id: 'req2', studentId: 'ADM-2024-002', name: 'Brian Otieno',    avatar: 'https://i.pravatar.cc/80?img=12', msg: 'Would like to talk about stress management.', date: 'Today, 8:50 AM',   status: 'pending' },
+    { id: 'req3', studentId: 'ADM-2024-005', name: 'Esther Njoroge',  avatar: 'https://i.pravatar.cc/80?img=44', msg: 'Feeling overwhelmed — need to speak to someone.', date: 'Yesterday, 4:22 PM', status: 'pending' },
+    { id: 'req4', studentId: 'ADM-2024-003', name: 'Cynthia Mwangi',  avatar: 'https://i.pravatar.cc/80?img=25', msg: 'Follow-up session request.',               date: 'Mon, 11:00 AM',  status: 'accepted' },
+];
+
+const SESSIONS = [
+    { studentId: 'ADM-2024-001', name: 'Amanda Wanjiru',  avatar: 'https://i.pravatar.cc/40?img=47', date: 'June 18, 2026', time: '10:00 AM', attendance: 'pending' },
+    { studentId: 'ADM-2024-002', name: 'Brian Otieno',    avatar: 'https://i.pravatar.cc/40?img=12', date: 'June 18, 2026', time: '11:30 AM', attendance: 'pending' },
+    { studentId: 'ADM-2024-003', name: 'Cynthia Mwangi',  avatar: 'https://i.pravatar.cc/40?img=25', date: 'June 16, 2026', time: '2:00 PM',  attendance: 'attended' },
+    { studentId: 'ADM-2024-004', name: 'David Kimani',    avatar: 'https://i.pravatar.cc/40?img=15', date: 'June 15, 2026', time: '9:00 AM',  attendance: 'missed' },
+    { studentId: 'ADM-2024-005', name: 'Esther Njoroge',  avatar: 'https://i.pravatar.cc/40?img=44', date: 'June 17, 2026', time: '3:30 PM',  attendance: 'attended' },
+];
+
+/* ═══════════════════════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════════════════════ */
+function handleLogin() {
+    const id   = document.getElementById('staffIdInput').value.trim().toUpperCase();
+    const pass = document.getElementById('staffPassInput').value;
+    const err  = document.getElementById('loginError');
+    const user = DEMO_COUNSELORS[id];
+
+    if (user && user.password === pass) {
+        err.style.display = 'none';
+        sessionStorage.setItem('cLoggedIn', 'true');
+        sessionStorage.setItem('cId', id);
+        sessionStorage.setItem('cName', user.name);
+        sessionStorage.setItem('cTitle', user.title);
+        sessionStorage.setItem('cAvatar', user.avatar);
+        sessionStorage.setItem('cEmail', user.email);
+        sessionStorage.setItem('cDept', user.dept);
+        document.getElementById('loginOverlay').style.display = 'none';
+        initPortal(user);
+    } else {
+        err.style.display = 'block';
+        document.getElementById('staffPassInput').value = '';
+    }
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') handleLogin();
+});
+
+function signOut() {
+    sessionStorage.clear();
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('staffIdInput').value = '';
+    document.getElementById('staffPassInput').value = '';
+}
+
+/* ═══════════════════════════════════════════════════════
+   INIT PORTAL
+═══════════════════════════════════════════════════════ */
+function initPortal(user) {
+    const fullTitle = user.title + ' ' + user.name;
+    const pendingCount = REQUESTS.filter(r => r.status === 'pending').length;
+
+    // Hero / nav
+    document.getElementById('heroName').textContent  = 'Welcome, ' + fullTitle;
+    document.getElementById('heroSub').textContent   = 'You have ' + pendingCount + ' pending student request' + (pendingCount !== 1 ? 's' : '') + ' today.';
+    document.getElementById('heroAvatar').src        = user.avatar;
+    document.getElementById('navAvatar').src         = user.avatar;
+
+    // Profile form
+    document.getElementById('pfName').value  = user.name;
+    document.getElementById('pfEmail').value = user.email;
+    document.getElementById('pfDept').value  = user.dept;
+    document.getElementById('pfTitle').value = user.title;
+    document.getElementById('profileAvatarPreview').src = user.avatar;
+
+    // Override with saved avatar
+    const savedPic = localStorage.getItem('cAvatar_' + sessionStorage.getItem('cId'));
+    if (savedPic) {
+        ['heroAvatar','navAvatar','profileAvatarPreview'].forEach(id => { document.getElementById(id).src = savedPic; });
+    }
+
+    // Render everything
+    renderDashRequests();
+    renderDashRisk();
+    renderFullRequests();
+    renderFullStudents();
+    renderSessions();
+    renderTrends();
+    populateNoteSelect();
+    loadSavedNotes();
+
+    // Badge
+    document.getElementById('reqBadge').textContent = pendingCount;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════════════════════ */
+function switchTab(id, btn) {
+    document.querySelectorAll('.c-page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) {
+        document.querySelectorAll('.c-nav-tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    window.scrollTo(0, 0);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER HELPERS
+═══════════════════════════════════════════════════════ */
+function riskLabel(r) {
+    if (r === 'critical') return 'Critical';
+    if (r === 'support')  return 'Needs Support';
+    return 'Stable';
+}
+
+function renderStudentCard(s, actions = '') {
+    return `
+    <div class="stu-card risk-${s.risk}" id="stucard-${s.id}">
+        <img class="stu-avatar" src="${s.avatar}" alt="${s.name}">
+        <div class="stu-info">
+            <div class="stu-name">${s.name}</div>
+            <div class="stu-meta">${s.id}</div>
+        </div>
+        <div class="stu-score">${s.score}%</div>
+        <span class="risk-badge">${riskLabel(s.risk)}</span>
+        <div class="stu-actions">${actions}</div>
+    </div>`;
+}
+
+/* ── DASHBOARD ── */
+function renderDashRequests() {
+    const pending = REQUESTS.filter(r => r.status === 'pending').slice(0, 3);
+    const el = document.getElementById('dashRequestList');
+    if (!pending.length) { el.innerHTML = '<p style="font-size:13px;color:#aaa;padding:8px 0;">No pending requests.</p>'; return; }
+    el.innerHTML = pending.map(r => reqCard(r, true)).join('');
+}
+
+function renderDashRisk() {
+    const risk = STUDENTS.filter(s => s.risk !== 'stable');
+    document.getElementById('dashRiskList').innerHTML = risk.map(s =>
+        renderStudentCard(s, `<button class="btn btn-teal btn-sm" onclick="switchTab('notes',null)">Add Note</button>`)
+    ).join('');
+}
+
+/* ── REQUESTS ── */
+function reqCard(r, compact = false) {
+    const isNew = r.status === 'pending';
+    return `
+    <div class="request-card ${isNew ? 'new-request' : ''}" id="reqcard-${r.id}">
+        <img class="stu-avatar" src="${r.avatar}" alt="${r.name}" style="width:44px;height:44px;">
+        <div class="req-info">
+            <div class="req-name">${r.name} <span style="font-size:11px;font-weight:400;color:#aaa;">${r.id}</span></div>
+            <div class="req-meta">${r.date} · ${r.msg}</div>
+        </div>
+        ${isNew ? `
+        <div class="req-actions">
+            <button class="btn btn-green btn-sm" onclick="acceptRequest('${r.id}')">
+                <i class="fa-solid fa-check"></i> Accept
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="declineRequest('${r.id}')">
+                <i class="fa-solid fa-xmark"></i> Decline
+            </button>
+        </div>` : `<span class="att-badge att-attended">Accepted</span>`}
+    </div>`;
+}
+
+function renderFullRequests() {
+    document.getElementById('fullRequestList').innerHTML = REQUESTS.map(r => reqCard(r)).join('');
+}
+
+/* ── STUDENTS ── */
+function renderFullStudents() {
+    document.getElementById('fullStudentList').innerHTML = STUDENTS.map(s =>
+        renderStudentCard(s, `
+            <button class="btn btn-outline btn-sm" onclick="switchTab('notes',null)">
+                <i class="fa-solid fa-notes-medical"></i> Note
+            </button>
+            <button class="btn btn-teal btn-sm" onclick="switchTab('trends',null)">
+                <i class="fa-solid fa-chart-line"></i> Trend
+            </button>
+        `)
+    ).join('');
+}
+
+/* ── SESSIONS ── */
+function renderSessions() {
+    document.getElementById('sessionsBody').innerHTML = SESSIONS.map((s, i) => {
+        const attClass = s.attendance === 'attended' ? 'att-attended' : s.attendance === 'missed' ? 'att-missed' : 'att-pending';
+        const attLabel = s.attendance === 'attended' ? '<i class="fa-solid fa-circle-check"></i> Attended' :
+                         s.attendance === 'missed'   ? '<i class="fa-solid fa-circle-xmark"></i> Missed' :
+                         '<i class="fa-solid fa-clock"></i> Upcoming';
+        return `<tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <img src="${s.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+                    <div>
+                        <div style="font-weight:600;font-size:13px;">${s.name}</div>
+                        <div style="font-size:11px;color:#aaa;">${s.studentId}</div>
+                    </div>
+                </div>
+            </td>
+            <td>${s.date}</td>
+            <td>${s.time}</td>
+            <td><span class="att-badge ${attClass}">${attLabel}</span></td>
+            <td>
+                <div style="display:flex;gap:6px;">
+                    <button class="btn btn-green btn-sm" onclick="markAttendance(${i},'attended')">
+                        <i class="fa-solid fa-check"></i> Attended
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="markAttendance(${i},'missed')">
+                        <i class="fa-solid fa-xmark"></i> Missed
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+/* ── WELLNESS TRENDS ── */
+const trendCharts = {};
+
+function renderTrends() {
+    const grid = document.getElementById('trendGrid');
+    grid.innerHTML = STUDENTS.map(s => `
+        <div class="trend-card">
+            <div class="trend-card-header">
+                <img src="${s.avatar}" alt="${s.name}">
+                <div>
+                    <div class="tc-name">${s.name}</div>
+                    <div class="tc-id">${s.id} · <span style="color:${s.risk==='critical'?'#ef4444':s.risk==='support'?'#f59e0b':'#10b981'};font-weight:600;">${riskLabel(s.risk)}</span></div>
+                </div>
+            </div>
+            <div class="trend-chart-wrap">
+                <canvas id="chart-${s.id}"></canvas>
+            </div>
+        </div>
+    `).join('');
+
+    // Slight delay so canvases are in DOM
+    setTimeout(() => {
+        STUDENTS.forEach(s => {
+            const ctx = document.getElementById('chart-' + s.id);
+            if (!ctx) return;
+            if (trendCharts[s.id]) { trendCharts[s.id].destroy(); }
+            trendCharts[s.id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Wk 1','Wk 2','Wk 3','Wk 4'],
+                    datasets: [{
+                        data: s.trend,
+                        borderColor: s.risk === 'critical' ? '#ef4444' : s.risk === 'support' ? '#f59e0b' : '#0d9488',
+                        backgroundColor: s.risk === 'critical' ? 'rgba(239,68,68,0.08)' : s.risk === 'support' ? 'rgba(245,158,11,0.08)' : 'rgba(13,148,136,0.08)',
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { font: { family: 'Poppins', size: 11 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+                        x: { ticks: { font: { family: 'Poppins', size: 11 } }, grid: { display: false } }
+                    }
+                }
+            });
+        });
+    }, 50);
+}
+
+/* ── NOTES ── */
+function populateNoteSelect() {
+    const sel = document.getElementById('noteStudent');
+    sel.innerHTML = '<option value="">— Select student —</option>';
+    STUDENTS.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name + ' (' + s.id + ')';
+        sel.appendChild(opt);
+    });
+}
+
+function saveNote() {
+    const studentId = document.getElementById('noteStudent').value;
+    const text      = document.getElementById('noteText').value.trim();
+    if (!studentId || !text) { showToast('Select a student and write a note first.'); return; }
+
+    const student = STUDENTS.find(s => s.id === studentId);
+    const notes   = JSON.parse(localStorage.getItem('counselorNotes') || '[]');
+    const now     = new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+    notes.unshift({ studentId, name: student.name, avatar: student.avatar, text, date: now });
+    localStorage.setItem('counselorNotes', JSON.stringify(notes.slice(0, 50)));
+
+    document.getElementById('noteText').value = '';
+    document.getElementById('noteStudent').value = '';
+    loadSavedNotes();
+    showToast('Note saved for ' + student.name);
+}
+
+function loadSavedNotes() {
+    const notes = JSON.parse(localStorage.getItem('counselorNotes') || '[]');
+    const el    = document.getElementById('savedNotesList');
+    if (!notes.length) { el.innerHTML = '<p style="font-size:13px;color:#aaa;">No notes saved yet.</p>'; return; }
+    el.innerHTML = notes.slice(0, 6).map(n => `
+        <div class="note-entry">
+            <div class="note-meta">
+                <span><img src="${n.avatar}" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:5px;">${n.name}</span>
+                <span>${n.date}</span>
+            </div>
+            <p>${n.text}</p>
+        </div>
+    `).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACTIONS
+═══════════════════════════════════════════════════════ */
+function acceptRequest(reqId) {
+    const r = REQUESTS.find(x => x.id === reqId);
+    if (r) {
+        r.status = 'accepted';
+        renderDashRequests();
+        renderFullRequests();
+        updateBadge();
+        showToast('Request from ' + r.name + ' accepted.');
+    }
+}
+
+function declineRequest(reqId) {
+    const r = REQUESTS.find(x => x.id === reqId);
+    if (r) {
+        r.status = 'declined';
+        renderDashRequests();
+        renderFullRequests();
+        updateBadge();
+        showToast('Request declined.');
+    }
+}
+
+function updateBadge() {
+    const count = REQUESTS.filter(r => r.status === 'pending').length;
+    document.getElementById('reqBadge').textContent = count;
+    document.getElementById('heroSub').textContent = 'You have ' + count + ' pending student request' + (count !== 1 ? 's' : '') + '.';
+}
+
+function markAttendance(index, status) {
+    SESSIONS[index].attendance = status;
+    renderSessions();
+    const name = SESSIONS[index].name;
+    showToast(name + ' marked as ' + status + '.');
+}
+
+/* ── PROFILE ── */
+function handleAvatarUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const src = e.target.result;
+        const id  = sessionStorage.getItem('cId');
+        if (id) localStorage.setItem('cAvatar_' + id, src);
+        ['heroAvatar','navAvatar','profileAvatarPreview'].forEach(el => { document.getElementById(el).src = src; });
+    };
+    reader.readAsDataURL(file);
+}
+
+function saveProfile() {
+    const name  = document.getElementById('pfName').value.trim();
+    const title = document.getElementById('pfTitle').value;
+    if (name) {
+        document.getElementById('heroName').textContent = 'Welcome, ' + title + ' ' + name;
+    }
+    showToast('Profile updated.');
+}
+
+function setAvail(btn, val) {
+    document.querySelectorAll('.avail-opt').forEach(b => b.classList.remove('selected-avail'));
+    btn.classList.add('selected-avail');
+}
+
+/* ── TOAST ── */
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PAGE LOAD
+═══════════════════════════════════════════════════════ */
+window.onload = function () {
+    if (sessionStorage.getItem('cLoggedIn') === 'true') {
+        const id    = sessionStorage.getItem('cId');
+        const user  = {
+            title:  sessionStorage.getItem('cTitle'),
+            name:   sessionStorage.getItem('cName'),
+            avatar: sessionStorage.getItem('cAvatar'),
+            email:  sessionStorage.getItem('cEmail'),
+            dept:   sessionStorage.getItem('cDept'),
+        };
+        document.getElementById('loginOverlay').style.display = 'none';
+        initPortal(user);
+    }
+};
+</script>
+</body>
+</html>

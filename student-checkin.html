@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mental Health Check-In</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+background:#8763dc;
+padding:40px;
+}
+
+.container{
+background:white;
+padding:30px;
+max-width:900px;
+margin:auto;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h1{text-align:center;}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-bottom:30px;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:10px;
+text-align:center;
+}
+
+th{background:#f0f0f0;}
+
+.criteria{
+text-align:left;
+font-weight:bold;
+}
+
+button{
+padding:12px 20px;
+background:#8b5cf6;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+button:hover{background:#6d28d9;}
+
+textarea{
+width:100%;
+height:120px;
+padding:10px;
+}
+
+#resultChart{
+max-width:500px;
+max-height:300px;
+margin:auto;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Student Mental Health Check-In</h1>
+
+<form id="checkinForm">
+
+<table>
+
+<tr>
+<th>Question</th>
+<th>5</th>
+<th>4</th>
+<th>3</th>
+<th>2</th>
+<th>1</th>
+</tr>
+
+<script>
+for(let i=1;i<=10;i++){
+document.write(`
+<tr>
+<td class="criteria">${i}. Mental wellbeing question ${i}</td>
+<td><input type="radio" name="q${i}" value="5"></td>
+<td><input type="radio" name="q${i}" value="4"></td>
+<td><input type="radio" name="q${i}" value="3"></td>
+<td><input type="radio" name="q${i}" value="2"></td>
+<td><input type="radio" name="q${i}" value="1"></td>
+</tr>
+`);
+}
+</script>
+
+</table>
+
+<h3>Reflection (Max 500 words)</h3>
+<textarea maxlength="500"></textarea>
+
+<br><br>
+
+<button type="button" onclick="calculateResults()">Submit Check-In</button>
+<button type="button" onclick="location.href='student-portal.html'">
+Back to Dashboard
+</button>
+
+</form>
+
+<div id="resultSection" style="display:none;margin-top:30px;text-align:center;">
+<h2>Your Wellbeing Result</h2>
+<p id="percentageResult"></p>
+<canvas id="resultChart"></canvas>
+</div>
+
+</div>
+
+<script>
+
+let chartInstance = null;
+
+function calculateResults(){
+
+const answers = document.querySelectorAll('input[type="radio"]:checked');
+
+if(answers.length < 10){
+alert("Please answer all questions.");
+return;
+}
+
+let totalScore = 0;
+
+answers.forEach(answer=>{
+totalScore += parseInt(answer.value);
+});
+
+const percentage = Math.round((totalScore/50)*100);
+
+document.getElementById("resultSection").style.display="block";
+document.getElementById("percentageResult").innerText =
+"Your Mental Wellbeing Score: "+percentage+"%";
+
+generateChart(percentage);
+saveResult(percentage);
+}
+
+function generateChart(score){
+
+const ctx=document.getElementById("resultChart").getContext("2d");
+
+if(chartInstance){
+chartInstance.destroy();
+}
+
+chartInstance=new Chart(ctx,{
+type:'bar',
+data:{
+labels:["Wellbeing Score"],
+datasets:[{
+label:"Score (%)",
+data:[score]
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false,
+scales:{
+y:{
+beginAtZero:true,
+max:100
+}
+}
+}
+});
+}
+
+function saveResult(score){
+
+let history =
+JSON.parse(localStorage.getItem("checkinHistory")) || [];
+
+history.push({
+date:new Date().toLocaleDateString(),
+score:score
+});
+
+localStorage.setItem(
+"checkinHistory",
+JSON.stringify(history)
+);
+}
+
+</script>
+
+</body>
+</html>

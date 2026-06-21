@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources | CampusCare</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- shared navbar/footer/reset — used on ALL pages -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- resources page only -->
+    <link rel="stylesheet" href="resources.css">
+</head>
+
+<body>
+
+<!-- ── NAVBAR ──────────────────────────────────────────────── -->
+<nav class="navbar">
+    <a href="Home.html" class="logo">
+        <i class="fa-solid fa-heart"></i>
+        <div>
+            <h2>CampusCare</h2>
+            <p>Mental Health Support</p>
+        </div>
+    </a>
+
+    <button class="nav-toggle" aria-label="Open menu" onclick="this.nextElementSibling.classList.toggle('open')">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <ul class="nav-links">
+        <li><a href="Home.html">Home</a></li>
+        <li><a href="About.html">About</a></li>
+        <li><a href="Services.html">Services</a></li>
+        <li><a href="Resources.html" class="active">Resources</a></li>
+        <li><a href="Contact.html">Contact</a></li>
+    </ul>
+
+    <button class="help-btn">
+        <i class="fa-solid fa-phone"></i>
+        Get Help
+    </button>
+</nav>
+
+<!-- ── HERO ────────────────────────────────────────────────── -->
+<section class="resources-hero">
+    <span class="eyebrow">Resource Library</span>
+    <h1>Your Wellness <span>Toolkit</span></h1>
+    <p>
+        Carefully curated books, videos, articles, and practices
+        to help you find balance, build resilience, and feel supported
+        — wherever you are on your journey.
+    </p>
+</section>
+
+<!-- ── JUMP NAV ────────────────────────────────────────────── -->
+<nav class="jump-nav" aria-label="Jump to section">
+    <a href="#affirmation"><i class="fa-solid fa-sun"></i> Daily Affirmation</a>
+    <a href="#books"><i class="fa-solid fa-book-open"></i> Books</a>
+    <a href="#videos"><i class="fa-solid fa-play-circle"></i> Videos</a>
+    <a href="#spiritual"><i class="fa-solid fa-hands-praying"></i> Spiritual</a>
+    <a href="#articles"><i class="fa-solid fa-newspaper"></i> Articles</a>
+    <a href="#journaling"><i class="fa-solid fa-pen-fancy"></i> Journaling</a>
+</nav>
+
+<!-- ── DAILY AFFIRMATION ────────────────────────────────────── -->
+<div id="affirmation" class="affirmation-banner">
+    <div>
+        <p class="label">Today's Affirmation</p>
+        <blockquote id="affirmationText">Loading your affirmation…</blockquote>
+    </div>
+    <button class="affirmation-refresh" onclick="showAffirmation()">
+        <i class="fa-solid fa-rotate-right"></i> New affirmation
+    </button>
+</div>
+
+<!-- ── RECOMMENDED BOOKS ────────────────────────────────────── -->
+<section id="books" class="page-section">
+    <div class="section-header">
+        <span class="eyebrow">Reading List</span>
+        <h2>Recommended Books</h2>
+        <p>Titles that help you understand your mind, build better habits, and find hope in hard times.</p>
+    </div>
+
+    <div class="books-grid">
+        <div class="book-card">
+            <div class="book-icon"><i class="fa-solid fa-book"></i></div>
+            <h3>The Power of Now</h3>
+            <p>Guides readers toward present-moment awareness, helping dissolve anxiety rooted in past regrets or future worries.</p>
+            <p class="author">Eckhart Tolle</p>
+        </div>
+
+        <div class="book-card">
+            <div class="book-icon"><i class="fa-solid fa-seedling"></i></div>
+            <h3>Atomic Habits</h3>
+            <p>Shows how tiny, consistent changes compound into powerful routines that protect and improve mental wellbeing.</p>
+            <p class="author">James Clear</p>
+        </div>
+
+        <div class="book-card">
+            <div class="book-icon"><i class="fa-solid fa-heart"></i></div>
+            <h3>Reasons to Stay Alive</h3>
+            <p>A candid, hopeful memoir about surviving depression and anxiety. Proof that things can and do get better.</p>
+            <p class="author">Matt Haig</p>
+        </div>
+
+        <div class="book-card">
+            <div class="book-icon"><i class="fa-solid fa-brain"></i></div>
+            <h3>Lost Connections</h3>
+            <p>Explores the real-world social and environmental causes of depression and offers meaningful, evidence-backed solutions.</p>
+            <p class="author">Johann Hari</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── YOUTUBE GUIDES ───────────────────────────────────────── -->
+<section id="videos" class="page-section alt-bg">
+    <div class="section-header">
+        <span class="eyebrow">Video Guides</span>
+        <h2>Watch &amp; Learn</h2>
+        <p>Short, expert-backed videos on breathing, mindfulness, and managing stress.</p>
+    </div>
+
+    <div class="video-grid">
+        <div class="video-card">
+            <iframe src="https://www.youtube.com/embed/ZToicYcHIOU" allowfullscreen title="Mental health guide video 1"></iframe>
+            <div class="video-label">
+                Guided Breathing Exercise
+                <span>5 min · Stress relief</span>
+            </div>
+        </div>
+
+        <div class="video-card">
+            <iframe src="https://www.youtube.com/embed/inpok4MKVLM" allowfullscreen title="Mental health guide video 2"></iframe>
+            <div class="video-label">
+                Mindfulness Meditation
+                <span>8 min · Focus &amp; calm</span>
+            </div>
+        </div>
+
+        <div class="video-card">
+            <iframe src="https://www.youtube.com/embed/DxIDKZHW3-E" allowfullscreen title="Mental health guide video 3"></iframe>
+            <div class="video-label">
+                Understanding Anxiety
+                <span>10 min · Education</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── SPIRITUAL ENCOURAGEMENT ──────────────────────────────── -->
+<section id="spiritual" class="page-section">
+    <div class="section-header">
+        <span class="eyebrow">Faith &amp; Reflection</span>
+        <h2>Spiritual Encouragement</h2>
+        <p>Words of comfort and strength drawn from traditions across the world.</p>
+    </div>
+
+    <div class="faith-grid">
+        <div class="faith-card">
+            <div class="faith-icon"><i class="fa-solid fa-cross"></i></div>
+            <h3>Christian</h3>
+            <blockquote>
+                Come to me, all who are weary and burdened, and I will give you rest.
+            </blockquote>
+            <p class="reference">Matthew 11:28</p>
+        </div>
+
+        <div class="faith-card">
+            <div class="faith-icon"><i class="fa-solid fa-star-and-crescent"></i></div>
+            <h3>Islamic</h3>
+            <blockquote>
+                Indeed, with hardship comes ease.
+            </blockquote>
+            <p class="reference">Quran 94:6</p>
+        </div>
+
+        <div class="faith-card">
+            <div class="faith-icon"><i class="fa-solid fa-om"></i></div>
+            <h3>Hindu</h3>
+            <blockquote>
+                Whenever dharma declines and the purpose of life is forgotten, I manifest myself on earth.
+            </blockquote>
+            <p class="reference">Bhagavad Gita 4:7</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── ARTICLES ─────────────────────────────────────────────── -->
+<section id="articles" class="page-section alt-bg">
+    <div class="section-header">
+        <span class="eyebrow">Reading</span>
+        <h2>Mental Health Articles</h2>
+        <p>Short, practical reads written for students navigating academic pressure and emotional challenges.</p>
+    </div>
+
+    <div class="articles-grid">
+        <div class="article-card">
+            <span class="tag">Anxiety</span>
+            <h3>Understanding Anxiety</h3>
+            <p>Learn the most common anxiety triggers, how your body responds to stress, and practical coping strategies you can use right now.</p>
+            <a href="#" class="read-link">Read article <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+        <div class="article-card">
+            <span class="tag">Academic Stress</span>
+            <h3>Managing Academic Stress</h3>
+            <p>Practical, student-tested ways to balance studies, deadlines, and personal wellbeing without burning out.</p>
+            <a href="#" class="read-link">Read article <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+        <div class="article-card">
+            <span class="tag">Resilience</span>
+            <h3>Building Emotional Resilience</h3>
+            <p>Develop the emotional strength to recover from setbacks, handle uncertainty, and keep moving forward.</p>
+            <a href="#" class="read-link">Read article <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+        <div class="article-card">
+            <span class="tag">Sleep</span>
+            <h3>Sleep &amp; Mental Health</h3>
+            <p>Understand how poor sleep affects your mood, memory, and focus — and simple habits to protect your rest.</p>
+            <a href="#" class="read-link">Read article <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+    </div>
+</section>
+
+<!-- ── JOURNALING ───────────────────────────────────────────── -->
+<section id="journaling" class="page-section">
+    <div class="journaling-section">
+        <div class="journaling-text">
+            <span class="eyebrow" style="display:inline-block;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#8b5cf6;margin-bottom:12px;">Journaling</span>
+            <h2>Write Your Way to Clarity</h2>
+            <p>
+                Putting words to your feelings helps untangle the noise in your head.
+                Journaling reduces stress, builds self-awareness, and lets you track how
+                far you've come.
+            </p>
+            <p>
+                You don't need to write perfectly — just honestly.
+                Try one of these prompts to get started.
+            </p>
+        </div>
+
+        <div class="journaling-prompts">
+            <div class="prompt-item">
+                <span class="prompt-num">1</span>
+                <p>What is one thing that went well today, no matter how small?</p>
+            </div>
+            <div class="prompt-item">
+                <span class="prompt-num">2</span>
+                <p>What emotion am I carrying right now, and where do I feel it in my body?</p>
+            </div>
+            <div class="prompt-item">
+                <span class="prompt-num">3</span>
+                <p>What would I tell a close friend who was going through what I'm facing?</p>
+            </div>
+            <div class="prompt-item">
+                <span class="prompt-num">4</span>
+                <p>What is one thing I can let go of today to feel lighter?</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CRISIS / EMERGENCY STRIP ─────────────────────────────── -->
+<div class="crisis-strip">
+    <div>
+        <h2><i class="fa-solid fa-circle-exclamation" style="margin-right:10px;"></i>Need Immediate Support?</h2>
+        <p>
+            If you or someone you know is in crisis, our counsellors are available
+            24/7. You don't have to face this alone.
+        </p>
+    </div>
+    <button class="crisis-btn">
+        <i class="fa-solid fa-phone-volume"></i> Talk to a Counsellor
+    </button>
+</div>
+
+<!-- ── FOOTER ───────────────────────────────────────────────── -->
+<footer>
+    <p>&copy; 2026 CampusCare — Mental Health Early Support System. All rights reserved.</p>
+</footer>
+
+<script>
+    const affirmations = [
+        "You are not defined by your struggles — you are shaped by how you rise from them.",
+        "Progress, not perfection. Every small step matters.",
+        "It is okay to rest. Rest is part of the journey.",
+        "You belong here, and your feelings are valid.",
+        "Today is a new opportunity to be kind to yourself.",
+        "You have survived every hard day so far. This one is no different.",
+        "Asking for help is a sign of strength, not weakness.",
+        "Your mental health matters just as much as any deadline.",
+        "One breath at a time. One moment at a time. You've got this.",
+        "You are more than your grades, your worries, and your worst days."
+    ];
+
+    function showAffirmation() {
+        const el = document.getElementById('affirmationText');
+        el.style.opacity = 0;
+        setTimeout(() => {
+            const idx = Math.floor(Math.random() * affirmations.length);
+            el.textContent = affirmations[idx];
+            el.style.transition = 'opacity 0.4s';
+            el.style.opacity = 1;
+        }, 200);
+    }
+
+    showAffirmation();
+</script>
+
+</body>
+</html>
