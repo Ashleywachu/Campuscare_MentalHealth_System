@@ -1,3 +1,20 @@
+<?php
+session_start();
+
+// Server-side auth gate
+if (!isset($_SESSION['cLoggedIn']) || $_SESSION['cLoggedIn'] !== true) {
+    header('Location: counselor-login.html');
+    exit;
+}
+
+$counselorTitle  = htmlspecialchars($_SESSION['cTitle'] ?? '');
+$counselorName   = htmlspecialchars($_SESSION['cName'] ?? 'Counselor');
+$counselorEmail  = htmlspecialchars($_SESSION['cEmail'] ?? '');
+$counselorDept   = htmlspecialchars($_SESSION['cDept'] ?? '');
+$counselorAvatar = htmlspecialchars($_SESSION['cAvatar'] ?? 'https://i.pravatar.cc/80?img=33');
+$counselorId     = htmlspecialchars($_SESSION['cId'] ?? '');
+$fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,6 +50,9 @@
         <li><button onclick="switchTab('students', this)">
             <i class="fa-solid fa-users"></i> My Students
         </button></li>
+        <li><button onclick="switchTab('academics', this)">
+            <i class="fa-solid fa-graduation-cap"></i> Academic Overview
+        </button></li>
         <li><button onclick="switchTab('sessions', this)">
             <i class="fa-solid fa-calendar-check"></i> Sessions
         </button></li>
@@ -55,7 +75,7 @@
             <i class="fa-solid fa-right-from-bracket"></i> Log Out
         </button>
         <div class="c-avatar-btn" onclick="switchTab('profile', null)">
-            <img id="navAvatar" src="https://i.pravatar.cc/40?img=33" alt="Profile">
+            <img id="navAvatar" src="<?= $counselorAvatar ?>" alt="Profile">
         </div>
     </div>
 </nav>
@@ -67,10 +87,10 @@
     <div class="c-hero">
         <div class="c-hero-inner">
             <div class="c-hero-profile">
-                <img id="heroAvatar" class="c-hero-avatar" src="https://i.pravatar.cc/80?img=33" alt="Counselor">
+                <img id="heroAvatar" class="c-hero-avatar" src="<?= $counselorAvatar ?>" alt="Counselor">
                 <div class="c-hero-text">
                     <p class="eyebrow">Counselor Portal</p>
-                    <h1 id="heroName">Welcome</h1>
+                    <h1 id="heroName">Welcome, <?= $fullTitleName ?></h1>
                     <p class="hero-sub" id="heroSub">Loading your dashboard…</p>
                 </div>
             </div>
@@ -140,6 +160,36 @@
     <div class="c-body" style="margin-top:0; padding-top:0;">
         <div class="c-card">
             <div class="student-list" id="fullStudentList"></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════ ACADEMIC OVERVIEW ══════════ -->
+<div id="academics" class="c-page">
+    <div class="c-page-header">
+        <p class="eyebrow">Academic Standing</p>
+        <h2>Academic Overview</h2>
+    </div>
+    <div class="c-body" style="margin-top:0; padding-top:0;">
+        <div class="c-card">
+            <div style="overflow-x:auto;">
+                <table class="c-table" id="academicOverviewTable">
+                    <thead>
+                        <tr>
+                            <th>Admission No</th>
+                            <th>Name</th>
+                            <th>Avg Score</th>
+                            <th>Failing Units</th>
+                            <th>Absence %</th>
+                            <th>Flag</th>
+                        </tr>
+                    </thead>
+                    <tbody id="academicOverviewBody">
+                        <tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">Loading academic data…</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -231,7 +281,7 @@
     <div class="c-body" style="margin-top:0; padding-top:0;">
         <div class="c-card">
             <div class="avatar-upload-row" style="margin-bottom:24px;">
-                <img id="profileAvatarPreview" class="c-avatar-preview" src="https://i.pravatar.cc/70?img=33" alt="Profile">
+                <img id="profileAvatarPreview" class="c-avatar-preview" src="<?= $counselorAvatar ?>" alt="Profile">
                 <label class="upload-label" for="profileUploadInput">
                     <i class="fa-solid fa-camera"></i> Change photo
                 </label>
@@ -242,24 +292,24 @@
                 <div class="form-group">
                     <label for="pfTitle">Title</label>
                     <select class="c-input" id="pfTitle">
-                        <option>Dr.</option>
-                        <option>Mr.</option>
-                        <option>Ms.</option>
-                        <option>Mrs.</option>
-                        <option>Prof.</option>
+                        <option <?= $counselorTitle === 'Dr.' ? 'selected' : '' ?>>Dr.</option>
+                        <option <?= $counselorTitle === 'Mr.' ? 'selected' : '' ?>>Mr.</option>
+                        <option <?= $counselorTitle === 'Ms.' ? 'selected' : '' ?>>Ms.</option>
+                        <option <?= $counselorTitle === 'Mrs.' ? 'selected' : '' ?>>Mrs.</option>
+                        <option <?= $counselorTitle === 'Prof.' ? 'selected' : '' ?>>Prof.</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="pfName">Full Name</label>
-                    <input class="c-input" type="text" id="pfName" placeholder="First and last name">
+                    <input class="c-input" type="text" id="pfName" placeholder="First and last name" value="<?= $counselorName ?>">
                 </div>
                 <div class="form-group">
                     <label for="pfEmail">Email</label>
-                    <input class="c-input" type="email" id="pfEmail" placeholder="staff@university.ac.ke">
+                    <input class="c-input" type="email" id="pfEmail" placeholder="staff@university.ac.ke" value="<?= $counselorEmail ?>">
                 </div>
                 <div class="form-group">
                     <label for="pfDept">Department</label>
-                    <input class="c-input" type="text" id="pfDept" placeholder="Student Wellness Centre">
+                    <input class="c-input" type="text" id="pfDept" placeholder="Student Wellness Centre" value="<?= $counselorDept ?>">
                 </div>
                 <div class="form-group full">
                     <label>Availability</label>
@@ -293,7 +343,8 @@
 
 
 <script>
-/* DEMO DATA */
+/* DEMO DATA — Requests/Sessions/Wellness Trends remain placeholders.
+   These become real once the counselor-request-flow piece is built. */
 const STUDENTS = [
     { id: 'ADM-2024-001', name: 'Amanda Wanjiru',   avatar: 'https://i.pravatar.cc/80?img=47', score: 29, risk: 'critical', trend: [58,45,39,29] },
     { id: 'ADM-2024-002', name: 'Brian Otieno',     avatar: 'https://i.pravatar.cc/80?img=12', score: 42, risk: 'support',  trend: [70,65,55,42] },
@@ -318,35 +369,17 @@ const SESSIONS = [
 ];
 
 /* LOG OUT */
-function logOut() {
-    sessionStorage.clear();
-    window.location.href = 'counselor-login.html';
+function signOut() {
+    fetch('logout.php').finally(() => {
+        window.location.href = 'counselor-login.html';
+    });
 }
 
-/* INIT PORTAL */
-function initPortal(user) {
-    const fullTitle = (user.title ? user.title + ' ' : '') + user.name;
+/* INIT PORTAL — runs the demo renders that still use placeholder data */
+function initPortal() {
     const pendingCount = REQUESTS.filter(r => r.status === 'pending').length;
-
-    document.getElementById('heroName').textContent  = 'Welcome, ' + fullTitle;
-    document.getElementById('heroSub').textContent   = 'You have ' + pendingCount + ' pending student request' + (pendingCount !== 1 ? 's' : '') + ' today.';
-    if (user.avatar) {
-        document.getElementById('heroAvatar').src = user.avatar;
-        document.getElementById('navAvatar').src  = user.avatar;
-    }
-
-    // Profile form
-    document.getElementById('pfName').value  = user.name  || '';
-    document.getElementById('pfEmail').value = user.email || '';
-    document.getElementById('pfDept').value  = user.dept  || '';
-    if (user.title) document.getElementById('pfTitle').value = user.title;
-    if (user.avatar) document.getElementById('profileAvatarPreview').src = user.avatar;
-
-    // Override with saved avatar
-    const savedPic = localStorage.getItem('cAvatar_' + sessionStorage.getItem('cId'));
-    if (savedPic) {
-        ['heroAvatar','navAvatar','profileAvatarPreview'].forEach(id => { document.getElementById(id).src = savedPic; });
-    }
+    document.getElementById('heroSub').textContent =
+        'You have ' + pendingCount + ' pending student request' + (pendingCount !== 1 ? 's' : '') + ' today.';
 
     renderDashRequests();
     renderDashRisk();
@@ -356,6 +389,7 @@ function initPortal(user) {
     renderTrends();
     populateNoteSelect();
     loadSavedNotes();
+    loadStudentAcademics();
 
     document.getElementById('reqBadge').textContent = pendingCount;
 }
@@ -512,8 +546,8 @@ function renderTrends() {
                     labels: ['Wk 1','Wk 2','Wk 3','Wk 4'],
                     datasets: [{
                         data: s.trend,
-                        borderColor: s.risk === 'critical' ? '#ef4444' : s.risk === 'support' ? '#f59e0b' : '#0d9488',
-                        backgroundColor: s.risk === 'critical' ? 'rgba(239,68,68,0.08)' : s.risk === 'support' ? 'rgba(245,158,11,0.08)' : 'rgba(13,148,136,0.08)',
+                        borderColor: s.risk === 'critical' ? '#ef4444' : s.risk === 'support' ? '#f59e0b' : '#7c3aed',
+                        backgroundColor: s.risk === 'critical' ? 'rgba(239,68,68,0.08)' : s.risk === 'support' ? 'rgba(245,158,11,0.08)' : 'rgba(124,58,237,0.08)',
                         borderWidth: 2.5,
                         tension: 0.4,
                         pointRadius: 4,
@@ -532,6 +566,42 @@ function renderTrends() {
             });
         });
     }, 50);
+}
+
+/* Academic overview of the assigned students — real data from the DB */
+function loadStudentAcademics() {
+    fetch('get_counselor_students_academic.php')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            document.getElementById('academicOverviewBody').innerHTML =
+                `<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">${data.message || 'No academic data available.'}</td></tr>`;
+            return;
+        }
+
+        if (!data.students.length) {
+            document.getElementById('academicOverviewBody').innerHTML =
+                '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">No students found.</td></tr>';
+            return;
+        }
+
+        document.getElementById('academicOverviewBody').innerHTML = data.students.map(s => {
+            const flagClass = s.academic_flag === 'At Risk' ? 'att-missed' : s.academic_flag === 'Monitor' ? 'att-pending' : 'att-attended';
+            return `
+            <tr>
+                <td>${s.admission_no}</td>
+                <td>${s.name}</td>
+                <td>${s.avg_score ?? '—'}%</td>
+                <td>${s.failing_units} / ${s.total_units}</td>
+                <td>${s.overall_absence_pct ?? 0}%</td>
+                <td><span class="att-badge ${flagClass}">${s.academic_flag}</span></td>
+            </tr>`;
+        }).join('');
+    })
+    .catch(() => {
+        document.getElementById('academicOverviewBody').innerHTML =
+            '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">Could not load academic data right now.</td></tr>';
+    });
 }
 
 /* NOTES */
@@ -621,14 +691,16 @@ function handleAvatarUpload(input) {
     const reader = new FileReader();
     reader.onload = e => {
         const src = e.target.result;
-        const id  = sessionStorage.getItem('cId');
-        if (id) localStorage.setItem('cAvatar_' + id, src);
+        // Local-only preview for now — wiring this to a real avatar-upload.php
+        // (saving to counselors.avatar_url) is a good follow-up piece.
         ['heroAvatar','navAvatar','profileAvatarPreview'].forEach(el => { document.getElementById(el).src = src; });
     };
     reader.readAsDataURL(file);
 }
 
 function saveProfile() {
+    // Local-only display update for now — wiring this to a real
+    // update-profile.php (saving to counselors.full_name/title/etc.) is a good follow-up piece.
     const name  = document.getElementById('pfName').value.trim();
     const title = document.getElementById('pfTitle').value;
     if (name) {
@@ -650,22 +722,9 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-/* PAGE LOAD */
+/* PAGE LOAD — no more sessionStorage auth check needed, PHP already gated the page */
 window.onload = function () {
-    // Guard: redirect to login if not authenticated
-    if (sessionStorage.getItem('cLoggedIn') !== 'true') {
-        window.location.href = 'counselor-login.html';
-        return;
-    }
-
-    const user = {
-        title:  sessionStorage.getItem('cTitle'),
-        name:   sessionStorage.getItem('cName'),
-        avatar: sessionStorage.getItem('cAvatar') || null,
-        email:  sessionStorage.getItem('cEmail'),
-        dept:   sessionStorage.getItem('cDept'),
-    };
-    initPortal(user);
+    initPortal();
 };
 </script>
 </body>

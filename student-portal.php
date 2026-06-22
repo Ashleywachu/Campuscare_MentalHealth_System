@@ -1,3 +1,16 @@
+<?php
+session_start();
+
+// Server-side auth gate — no JS sessionStorage check needed anymore
+if (!isset($_SESSION['loggedIn']) || $_SESSION['loggedIn'] !== true) {
+    header('Location: student-login.html');
+    exit;
+}
+
+$studentName      = htmlspecialchars($_SESSION['userName'] ?? 'Student');
+$studentAdmission = htmlspecialchars($_SESSION['admissionNo'] ?? '');
+$studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.pravatar.cc/80?img=47');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,6 +43,11 @@
             </button>
         </li>
         <li>
+            <button onclick="switchTab('academics', this)">
+                <i class="fa-solid fa-graduation-cap"></i> Academics
+            </button>
+        </li>
+        <li>
             <button onclick="openCheckin()">
                 <i class="fa-solid fa-clipboard-check"></i> Check-In
             </button>
@@ -51,7 +69,7 @@
             <i class="fa-solid fa-arrow-left"></i> Main Site
         </a>
         <div class="avatar-btn" onclick="switchTab('settings', null)">
-            <img id="navAvatar" src="https://i.pravatar.cc/40?img=47" alt="Profile">
+            <img id="navAvatar" src="<?= $studentAvatar ?>" alt="Profile">
         </div>
     </div>
 </nav>
@@ -66,10 +84,10 @@
 
             <!-- Profile + Name -->
             <div class="greeting-profile">
-                <img id="greetingAvatar" class="greeting-avatar" src="https://i.pravatar.cc/80?img=47" alt="Profile photo">
+                <img id="greetingAvatar" class="greeting-avatar" src="<?= $studentAvatar ?>" alt="Profile photo">
                 <div class="greeting-text">
                     <p class="eyebrow">Welcome back</p>
-                    <h1 id="greetingName">Student</h1>
+                    <h1 id="greetingName"><?= $studentName ?></h1>
                     <p class="student-sub" id="studentSub">Good to see you </p>
                 </div>
             </div>
@@ -109,11 +127,11 @@
                 </div>
             </button>
 
-            <button class="action-card" onclick="window.location.href='Resources.html'">
-                <div class="action-icon orange"><i class="fa-solid fa-book-open"></i></div>
+            <button class="action-card" onclick="switchTab('academics', null)">
+                <div class="action-icon orange"><i class="fa-solid fa-graduation-cap"></i></div>
                 <div class="action-text">
-                    <h4>Resources</h4>
-                    <p>Books, videos &amp; articles</p>
+                    <h4>Academics</h4>
+                    <p>Grades &amp; attendance overview</p>
                 </div>
             </button>
 
@@ -134,10 +152,10 @@
                 <h3><i class="fa-solid fa-user"></i> Your Profile</h3>
 
                 <div class="profile-row">
-                    <img id="profilePreview" class="profile-avatar" src="https://i.pravatar.cc/60?img=47" alt="Profile">
+                    <img id="profilePreview" class="profile-avatar" src="<?= $studentAvatar ?>" alt="Profile">
                     <div>
-                        <p class="profile-name" id="usernameDisplay">Student</p>
-                        <p class="profile-sub" id="admissionDisplay">CampusCare Member</p>
+                        <p class="profile-name" id="usernameDisplay"><?= $studentName ?></p>
+                        <p class="profile-sub" id="admissionDisplay"><?= $studentAdmission ?> · CampusCare Member</p>
                     </div>
                 </div>
 
@@ -168,6 +186,68 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════ ACADEMICS ══════════ -->
+<div id="academics" class="portal-page">
+    <div class="journal-body">
+        <div class="page-header">
+            <p class="eyebrow">Your Records</p>
+            <h2>Academics</h2>
+        </div>
+
+        <div class="c-card" id="academicWarning" style="display:none; margin-bottom:20px; background:#fff5f5; border:1.5px solid #fecaca; border-radius:16px; padding:18px 22px;">
+            <p style="font-size:14px; color:#b91c1c; font-weight:600; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                Heads up — you have failing units or high absences this semester. Consider reaching out to your counsellor.
+            </p>
+        </div>
+
+        <div class="journal-card" style="margin-bottom:20px;">
+            <h3><i class="fa-solid fa-book"></i> Grades</h3>
+            <div style="overflow-x:auto;">
+                <table class="acad-table">
+                    <thead>
+                        <tr>
+                            <th>Unit Code</th>
+                            <th>Unit Name</th>
+                            <th>CAT 1</th>
+                            <th>CAT 2</th>
+                            <th>Assignment</th>
+                            <th>Exam</th>
+                            <th>Total</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradesTableBody">
+                        <tr><td colspan="8" style="text-align:center; color:#aaa; padding:20px;">Loading grades…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="journal-card">
+            <h3><i class="fa-solid fa-calendar-check"></i> Attendance</h3>
+            <div style="overflow-x:auto;">
+                <table class="acad-table">
+                    <thead>
+                        <tr>
+                            <th>Unit Code</th>
+                            <th>Unit Name</th>
+                            <th>Total Classes</th>
+                            <th>Attended</th>
+                            <th>Absences</th>
+                            <th>Absence %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        <tr><td colspan="6" style="text-align:center; color:#aaa; padding:20px;">Loading attendance…</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -257,7 +337,7 @@
                 <h3><i class="fa-solid fa-id-card"></i> Profile</h3>
 
                 <div class="avatar-upload-wrap">
-                    <img id="settingsAvatar" class="avatar-preview" src="https://i.pravatar.cc/70?img=47" alt="Profile">
+                    <img id="settingsAvatar" class="avatar-preview" src="<?= $studentAvatar ?>" alt="Profile">
                     <label class="upload-label" for="profileUpload">
                         <i class="fa-solid fa-camera"></i> Change photo
                     </label>
@@ -265,10 +345,11 @@
                 </div>
 
                 <label class="field-label" for="usernameInput">Display Name</label>
-                <input class="settings-input" type="text" id="usernameInput" placeholder="Your name">
+                <input class="settings-input" type="text" id="usernameInput" placeholder="Your name" value="<?= $studentName ?>">
 
                 <label class="field-label">Admission Number</label>
                 <input class="settings-input" type="text" id="admissionReadonly" readonly
+                    value="<?= $studentAdmission ?>"
                     style="opacity:0.6;cursor:not-allowed;">
 
                 <button class="settings-save" onclick="saveProfile()">
@@ -340,46 +421,10 @@ function openCheckin() {
 }
 
 function signOut() {
-    sessionStorage.clear();
-    window.location.href = 'student-login.html';
-}
-
-/*INIT PORTAL after login*/
-function initPortal(name, admission, avatar) {
-    // Greeting banner
-    document.getElementById('greetingName').textContent = name;
-    if (avatar) document.getElementById('greetingAvatar').src = avatar;
-
-    // Profile card
-    document.getElementById('usernameDisplay').textContent = name;
-    document.getElementById('admissionDisplay').textContent = admission + ' · CampusCare Member';
-
-    // Settings
-    document.getElementById('usernameInput').value = name;
-    document.getElementById('admissionReadonly').value = admission;
-
-    // All avatars
-    if (avatar) {
-        ['navAvatar', 'profilePreview', 'settingsAvatar'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.src = avatar;
-        });
-    }
-
-    // Override with saved profile pic if any
-    const savedPic  = localStorage.getItem('profilePic_' + admission);
-    const savedName = localStorage.getItem('username_' + admission);
-    if (savedPic) {
-        ['navAvatar', 'profilePreview', 'settingsAvatar', 'greetingAvatar'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.src = savedPic;
-        });
-    }
-    if (savedName) {
-        document.getElementById('greetingName').textContent = savedName;
-        document.getElementById('usernameDisplay').textContent = savedName;
-        document.getElementById('usernameInput').value = savedName;
-    }
+    // Clear the PHP session server-side, then send to login
+    fetch('logout.php').finally(() => {
+        window.location.href = 'student-login.html';
+    });
 }
 
 /*AFFIRMATIONS*/
@@ -413,8 +458,8 @@ function handleAvatarUpload(input) {
     const reader = new FileReader();
     reader.onload = e => {
         const src = e.target.result;
-        const admission = sessionStorage.getItem('admissionNo');
-        if (admission) localStorage.setItem('profilePic_' + admission, src);
+        // Local-only preview for now — wiring this to a real avatar-upload.php
+        // (saving to students.avatar_url) is a good follow-up piece.
         ['profilePreview', 'settingsAvatar', 'navAvatar', 'greetingAvatar'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.src = src;
@@ -424,10 +469,10 @@ function handleAvatarUpload(input) {
 }
 
 function saveProfile() {
+    // Local-only display update for now — wiring this to a real
+    // update-profile.php (saving to students.full_name) is a good follow-up piece.
     const name = document.getElementById('usernameInput').value.trim();
-    const admission = sessionStorage.getItem('admissionNo');
-    if (name && admission) {
-        localStorage.setItem('username_' + admission, name);
+    if (name) {
         document.getElementById('usernameDisplay').textContent = name;
         document.getElementById('greetingName').textContent = name;
     }
@@ -485,6 +530,68 @@ function loadHistoryGraph() {
     });
 }
 
+/* Academic data — calls the real PHP endpoint backed by the grades/attendance tables */
+function loadAcademicData() {
+    fetch('get_students_academic.php')
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            document.getElementById('gradesTableBody').innerHTML =
+                `<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px;">${data.message || 'No academic data available.'}</td></tr>`;
+            document.getElementById('attendanceTableBody').innerHTML =
+                `<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">${data.message || 'No academic data available.'}</td></tr>`;
+            return;
+        }
+
+        // Render grades table
+        if (data.grades.length) {
+            document.getElementById('gradesTableBody').innerHTML = data.grades.map(g => `
+                <tr>
+                    <td>${g.unit_code}</td>
+                    <td>${g.unit_name}</td>
+                    <td>${g.cat1}/15</td>
+                    <td>${g.cat2}/15</td>
+                    <td>${g.assignment}/10</td>
+                    <td>${g.exam}/60</td>
+                    <td><strong>${g.total}/100</strong></td>
+                    <td class="${g.total < 40 ? 'fail' : 'pass'}">${g.grade_letter}</td>
+                </tr>
+            `).join('');
+        } else {
+            document.getElementById('gradesTableBody').innerHTML =
+                '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px;">No grades recorded yet this semester.</td></tr>';
+        }
+
+        // Render attendance table
+        if (data.attendance.length) {
+            document.getElementById('attendanceTableBody').innerHTML = data.attendance.map(a => `
+                <tr>
+                    <td>${a.unit_code}</td>
+                    <td>${a.unit_name}</td>
+                    <td>${a.total_classes}</td>
+                    <td>${a.attended}</td>
+                    <td>${a.absences}</td>
+                    <td class="${a.absence_pct >= 40 ? 'fail' : 'pass'}">${a.absence_pct}%</td>
+                </tr>
+            `).join('');
+        } else {
+            document.getElementById('attendanceTableBody').innerHTML =
+                '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">No attendance recorded yet this semester.</td></tr>';
+        }
+
+        // Show warning if failing or high absence
+        if (data.failing_count > 0 || data.at_risk_attendance > 0) {
+            document.getElementById('academicWarning').style.display = 'block';
+        }
+    })
+    .catch(() => {
+        document.getElementById('gradesTableBody').innerHTML =
+            '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px;">Could not load grades right now.</td></tr>';
+        document.getElementById('attendanceTableBody').innerHTML =
+            '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">Could not load attendance right now.</td></tr>';
+    });
+}
+
 /*JOURNAL*/
 function selectMood(btn) {
     document.querySelectorAll('#moodChips .chip').forEach(c => c.classList.remove('selected'));
@@ -507,25 +614,15 @@ function saveJournal() {
     setTimeout(() => confirm.style.display = 'none', 3000);
 }
 
-/*INIT */
+/*INIT — no more sessionStorage auth check needed, PHP already gated the page*/
 window.onload = function () {
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark');
     }
 
-    // Guard: redirect to login if not authenticated
-    if (sessionStorage.getItem('loggedIn') !== 'true') {
-        window.location.href = 'student-login.html';
-        return;
-    }
-
-    const name      = sessionStorage.getItem('userName');
-    const admission = sessionStorage.getItem('admissionNo');
-    const avatar    = sessionStorage.getItem('userAvatar');
-    initPortal(name, admission, avatar);
-
     loadAffirmation();
     loadHistoryGraph();
+    loadAcademicData();
 };
 </script>
 

@@ -669,6 +669,40 @@ body.dark .chip { border-color: #3b2568; color: #bbb; }
 body.dark .prompts-list li { background: #2d1f50; color: #c4b5fd; }
 body.dark .theme-toggle { background: #2d1f50; color: #a78bfa; border-color: #3b2568; }
 
+/* ACADEMIC TABLES (Grades & Attendance) */
+.acad-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.acad-table th {
+    background: #f5f0ff;
+    color: #4c1d95;
+    font-weight: 600;
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 2px solid #ddd6fe;
+    white-space: nowrap;
+}
+
+.acad-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1eafa;
+    color: #333;
+    vertical-align: middle;
+}
+
+.acad-table tr:last-child td { border-bottom: none; }
+.acad-table tr:hover td { background: #faf7ff; }
+
+.acad-table td.pass { color: #059669; font-weight: 600; }
+.acad-table td.fail { color: #dc2626; font-weight: 600; }
+
+body.dark .acad-table th { background: #2d1f50; color: #c4b5fd; border-bottom-color: #3b2568; }
+body.dark .acad-table td { color: #e0d5f7; border-bottom-color: #2d1f50; }
+body.dark .acad-table tr:hover td { background: #231535; }
+
 /* RESPONSIVE */
 @media (max-width: 860px) {
     .dashboard-cols { grid-template-columns: 1fr; }
