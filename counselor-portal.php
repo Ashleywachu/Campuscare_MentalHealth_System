@@ -343,8 +343,8 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
 
 
 <script>
-/* DEMO DATA — Requests/Sessions/Wellness Trends remain placeholders.
-   These become real once the counselor-request-flow piece is built. */
+/* DEMO DATA — Sessions/Wellness Trends remain placeholders for now.
+   Requests are now live, pulled from get_my_assigned_requests.php. */
 const STUDENTS = [
     { id: 'ADM-2024-001', name: 'Amanda Wanjiru',   avatar: 'https://i.pravatar.cc/80?img=47', score: 29, risk: 'critical', trend: [58,45,39,29] },
     { id: 'ADM-2024-002', name: 'Brian Otieno',     avatar: 'https://i.pravatar.cc/80?img=12', score: 42, risk: 'support',  trend: [70,65,55,42] },
@@ -353,12 +353,7 @@ const STUDENTS = [
     { id: 'ADM-2024-005', name: 'Esther Njoroge',   avatar: 'https://i.pravatar.cc/80?img=44', score: 35, risk: 'support',  trend: [65,50,44,35] },
 ];
 
-const REQUESTS = [
-    { id: 'req1', studentId: 'ADM-2024-001', name: 'Amanda Wanjiru',  avatar: 'https://i.pravatar.cc/80?img=47', msg: 'Requesting an urgent session regarding exam anxiety.', date: 'Today, 9:14 AM',   status: 'pending' },
-    { id: 'req2', studentId: 'ADM-2024-002', name: 'Brian Otieno',    avatar: 'https://i.pravatar.cc/80?img=12', msg: 'Would like to talk about stress management.', date: 'Today, 8:50 AM',   status: 'pending' },
-    { id: 'req3', studentId: 'ADM-2024-005', name: 'Esther Njoroge',  avatar: 'https://i.pravatar.cc/80?img=44', msg: 'Feeling overwhelmed — need to speak to someone.', date: 'Yesterday, 4:22 PM', status: 'pending' },
-    { id: 'req4', studentId: 'ADM-2024-003', name: 'Cynthia Mwangi',  avatar: 'https://i.pravatar.cc/80?img=25', msg: 'Follow-up session request.',               date: 'Mon, 11:00 AM',  status: 'accepted' },
-];
+let REQUESTS = []; // populated by loadAssignedRequests()
 
 const SESSIONS = [
     { studentId: 'ADM-2024-001', name: 'Amanda Wanjiru',  avatar: 'https://i.pravatar.cc/40?img=47', date: 'June 18, 2026', time: '10:00 AM', attendance: 'pending' },
@@ -375,23 +370,16 @@ function signOut() {
     });
 }
 
-/* INIT PORTAL — runs the demo renders that still use placeholder data */
+/* INIT PORTAL */
 function initPortal() {
-    const pendingCount = REQUESTS.filter(r => r.status === 'pending').length;
-    document.getElementById('heroSub').textContent =
-        'You have ' + pendingCount + ' pending student request' + (pendingCount !== 1 ? 's' : '') + ' today.';
-
-    renderDashRequests();
     renderDashRisk();
-    renderFullRequests();
     renderFullStudents();
     renderSessions();
     renderTrends();
     populateNoteSelect();
     loadSavedNotes();
     loadStudentAcademics();
-
-    document.getElementById('reqBadge').textContent = pendingCount;
+    loadAssignedRequests(); // fetches REQUESTS, then renders request-dependent UI itself
 }
 
 /* TAB SWITCHING */
@@ -427,13 +415,6 @@ function renderStudentCard(s, actions = '') {
 }
 
 /* DASHBOARD */
-function renderDashRequests() {
-    const pending = REQUESTS.filter(r => r.status === 'pending').slice(0, 3);
-    const el = document.getElementById('dashRequestList');
-    if (!pending.length) { el.innerHTML = '<p style="font-size:13px;color:#aaa;padding:8px 0;">No pending requests.</p>'; return; }
-    el.innerHTML = pending.map(r => reqCard(r, true)).join('');
-}
-
 function renderDashRisk() {
     const risk = STUDENTS.filter(s => s.risk !== 'stable');
     document.getElementById('dashRiskList').innerHTML = risk.map(s =>
@@ -441,30 +422,88 @@ function renderDashRisk() {
     ).join('');
 }
 
-/* REQUESTS */
-function reqCard(r, compact = false) {
-    const isNew = r.status === 'pending';
+/* REQUESTS — live data */
+function loadAssignedRequests() {
+    fetch('get_my_assigned_requests.php')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                document.getElementById('dashRequestList').innerHTML =
+                    '<p style="font-size:13px;color:#aaa;padding:8px 0;">Could not load requests.</p>';
+                document.getElementById('fullRequestList').innerHTML =
+                    '<p style="font-size:13px;color:#aaa;padding:8px 0;">Could not load requests.</p>';
+                return;
+            }
+
+            REQUESTS = data.requests; // [{id, admission_no, message, status, student_name, student_avatar, requested_at, assigned_at, responded_at}]
+
+            const awaitingCount = REQUESTS.filter(r => r.status === 'assigned').length;
+            document.getElementById('heroSub').textContent =
+                'You have ' + awaitingCount + ' request' + (awaitingCount !== 1 ? 's' : '') + ' awaiting your response.';
+            document.getElementById('reqBadge').textContent = awaitingCount;
+
+            renderDashRequests();
+            renderFullRequests();
+        })
+        .catch(() => {
+            document.getElementById('dashRequestList').innerHTML =
+                '<p style="font-size:13px;color:#aaa;padding:8px 0;">Could not load requests.</p>';
+            document.getElementById('fullRequestList').innerHTML =
+                '<p style="font-size:13px;color:#aaa;padding:8px 0;">Could not load requests.</p>';
+        });
+}
+
+function reqCard(r) {
+    // Only 'assigned' requests are awaiting THIS counselor's response.
+    // 'accepted' means this counselor already said yes — show as accepted.
+    const isAwaiting = r.status === 'assigned';
+    const isAccepted = r.status === 'accepted';
+    const when = r.assigned_at || r.requested_at;
+
     return `
-    <div class="request-card ${isNew ? 'new-request' : ''}" id="reqcard-${r.id}">
-        <img class="stu-avatar" src="${r.avatar}" alt="${r.name}" style="width:44px;height:44px;">
+    <div class="request-card ${isAwaiting ? 'new-request' : ''}" id="reqcard-${r.id}">
+        <img class="stu-avatar" src="${r.student_avatar || 'https://i.pravatar.cc/80?img=1'}" alt="${r.student_name}" style="width:44px;height:44px;">
         <div class="req-info">
-            <div class="req-name">${r.name} <span style="font-size:11px;font-weight:400;color:#aaa;">${r.id}</span></div>
-            <div class="req-meta">${r.date} · ${r.msg}</div>
+            <div class="req-name">${r.student_name} <span style="font-size:11px;font-weight:400;color:#aaa;">${r.admission_no}</span></div>
+            <div class="req-meta">${when ? new Date(when).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : ''} · ${r.message || 'No message provided.'}</div>
         </div>
-        ${isNew ? `
+        ${isAwaiting ? `
         <div class="req-actions">
-            <button class="btn btn-green btn-sm" onclick="acceptRequest('${r.id}')">
+            <button class="btn btn-green btn-sm" onclick="respondToRequest(${r.id}, 'accept')">
                 <i class="fa-solid fa-check"></i> Accept
             </button>
-            <button class="btn btn-danger btn-sm" onclick="declineRequest('${r.id}')">
+            <button class="btn btn-danger btn-sm" onclick="respondToRequest(${r.id}, 'decline')">
                 <i class="fa-solid fa-xmark"></i> Decline
             </button>
-        </div>` : `<span class="att-badge att-attended">Accepted</span>`}
+        </div>` : isAccepted ? `<span class="att-badge att-attended">Accepted</span>` : ''}
     </div>`;
 }
 
+function renderDashRequests() {
+    const awaiting = REQUESTS.filter(r => r.status === 'assigned').slice(0, 3);
+    const el = document.getElementById('dashRequestList');
+    if (!awaiting.length) { el.innerHTML = '<p style="font-size:13px;color:#aaa;padding:8px 0;">No requests awaiting your response.</p>'; return; }
+    el.innerHTML = awaiting.map(r => reqCard(r)).join('');
+}
+
 function renderFullRequests() {
-    document.getElementById('fullRequestList').innerHTML = REQUESTS.map(r => reqCard(r)).join('');
+    const el = document.getElementById('fullRequestList');
+    if (!REQUESTS.length) { el.innerHTML = '<p style="font-size:13px;color:#aaa;padding:8px 0;">No requests assigned to you yet.</p>'; return; }
+    el.innerHTML = REQUESTS.map(r => reqCard(r)).join('');
+}
+
+function respondToRequest(requestId, action) {
+    const formData = new FormData();
+    formData.append('request_id', requestId);
+    formData.append('action', action);
+
+    fetch('respond_request.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            showToast(data.message || (action === 'accept' ? 'Request accepted.' : 'Request declined.'));
+            loadAssignedRequests();
+        })
+        .catch(() => showToast('Could not update the request. Please try again.'));
 }
 
 /* STUDENTS */
@@ -650,34 +689,6 @@ function loadSavedNotes() {
 }
 
 /* ACTIONS */
-function acceptRequest(reqId) {
-    const r = REQUESTS.find(x => x.id === reqId);
-    if (r) {
-        r.status = 'accepted';
-        renderDashRequests();
-        renderFullRequests();
-        updateBadge();
-        showToast('Request from ' + r.name + ' accepted.');
-    }
-}
-
-function declineRequest(reqId) {
-    const r = REQUESTS.find(x => x.id === reqId);
-    if (r) {
-        r.status = 'declined';
-        renderDashRequests();
-        renderFullRequests();
-        updateBadge();
-        showToast('Request declined.');
-    }
-}
-
-function updateBadge() {
-    const count = REQUESTS.filter(r => r.status === 'pending').length;
-    document.getElementById('reqBadge').textContent = count;
-    document.getElementById('heroSub').textContent = 'You have ' + count + ' pending student request' + (count !== 1 ? 's' : '') + '.';
-}
-
 function markAttendance(index, status) {
     SESSIONS[index].attendance = status;
     renderSessions();

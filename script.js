@@ -1,5 +1,3 @@
-
-
 /*SAMPLE DATA*/
 
 let users = [
@@ -68,10 +66,17 @@ function showSection(section){
         document.getElementById("pageTitle").textContent = t[0];
         document.getElementById("pageSubtitle").textContent = t[1];
     }
+
+    // Refresh live request data whenever the Assign tab is opened
+    if(section === "assignments"){
+        loadCounselorRequests();
+    }
 }
 
 function logout(){
-    window.location.href = "Home.html";
+    fetch('logout.php').finally(() => {
+        window.location.href = "admin-login.html";
+    });
 }
 
 /*CLOCK*/
@@ -258,12 +263,132 @@ function deleteResource(i){
     renderResources();
 }
 
-/*ASSIGNMENT*/
+/*COUNSELOR ASSIGNMENT — live data from counselor_requests via PHP*/
 
-function assignCounselor(){
-    const student = document.getElementById("assignStudent").value;
-    const counselor = document.getElementById("assignCounselor").value;
-    alert(`${counselor} has been assigned to ${student}.`);
+let counselorsList = []; // populated by loadCounselorRequests()
+
+function loadCounselorRequests(){
+    fetch('get_counselor_requests.php')
+        .then(res => res.json())
+        .then(data => {
+            if(!data.success){
+                document.getElementById("pendingRequestsWrap").innerHTML =
+                    '<p style="font-size:13px;color:var(--text-muted);">Could not load requests.</p>';
+                document.getElementById("allRequestsBody").innerHTML =
+                    '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Could not load requests.</td></tr>';
+                return;
+            }
+
+            counselorsList = data.counselors; // [{staff_id, title, full_name, department}]
+            renderPendingRequests(data.requests);
+            renderAllRequests(data.requests);
+
+            const pendingCount = data.requests.filter(r => r.status === 'pending').length;
+            document.getElementById("statPending").textContent = pendingCount;
+        })
+        .catch(() => {
+            document.getElementById("pendingRequestsWrap").innerHTML =
+                '<p style="font-size:13px;color:var(--text-muted);">Could not load requests.</p>';
+            document.getElementById("allRequestsBody").innerHTML =
+                '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Could not load requests.</td></tr>';
+        });
+}
+
+function counselorOptionsHtml(){
+    return counselorsList.map(c =>
+        `<option value="${c.staff_id}">${c.title || ''} ${c.full_name} — ${c.department || ''}</option>`
+    ).join('');
+}
+
+function renderPendingRequests(requests){
+    // pending = brand new, never assigned. declined = bounced back, needs reassignment.
+    const needsAssignment = requests.filter(r => r.status === 'pending' || r.status === 'declined');
+    const wrap = document.getElementById("pendingRequestsWrap");
+
+    if(!needsAssignment.length){
+        wrap.innerHTML = '<p style="font-size:13px;color:var(--text-muted);padding:8px 0;">No requests waiting on assignment.</p>';
+        return;
+    }
+
+    wrap.innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Assign Counselor</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                ${needsAssignment.map(r => `
+                    <tr>
+                        <td>${r.student_name}<br><span class="time" style="font-size:11px;">${r.admission_no}</span></td>
+                        <td style="max-width:240px;">${r.message || '<span style="color:var(--text-muted);">No message</span>'}</td>
+                        <td><span class="badge ${r.status === 'declined' ? 'deactivated' : 'pending'}">${r.status === 'declined' ? 'Declined — needs reassignment' : 'Pending'}</span></td>
+                        <td>
+                            <select id="assignSelect-${r.id}" style="min-width:200px;">
+                                <option value="">— Select counselor —</option>
+                                ${counselorOptionsHtml()}
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn primary small" onclick="assignCounselor(${r.id})">Assign</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderAllRequests(requests){
+    const body = document.getElementById("allRequestsBody");
+
+    if(!requests.length){
+        body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No requests yet.</td></tr>';
+        return;
+    }
+
+    const statusBadge = {
+        pending:  '<span class="badge pending">Pending</span>',
+        assigned: '<span class="badge active">Assigned — awaiting counselor</span>',
+        accepted: '<span class="badge active">Accepted</span>',
+        declined: '<span class="badge deactivated">Declined</span>',
+    };
+
+    body.innerHTML = requests.map(r => `
+        <tr>
+            <td>${r.student_name}<br><span class="time" style="font-size:11px;">${r.admission_no}</span></td>
+            <td style="max-width:240px;">${r.message || '<span style="color:var(--text-muted);">No message</span>'}</td>
+            <td>${statusBadge[r.status] || r.status}</td>
+            <td>${r.counselor_name ? (r.counselor_title || '') + ' ' + r.counselor_name : '<span style="color:var(--text-muted);">—</span>'}</td>
+            <td class="time">${r.requested_at ? new Date(r.requested_at).toLocaleDateString() : '—'}</td>
+        </tr>
+    `).join('');
+}
+
+function assignCounselor(requestId){
+    const select = document.getElementById(`assignSelect-${requestId}`);
+    const staffId = select ? select.value : '';
+
+    if(!staffId){
+        alert("Please select a counselor first.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('request_id', requestId);
+    formData.append('staff_id', staffId);
+
+    fetch('assign_counselor.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            loadCounselorRequests(); // refresh both tables
+        })
+        .catch(() => alert("Could not assign the counselor. Please try again."));
 }
 
 /*REPORTS*/
@@ -272,11 +397,13 @@ function generateReport(){
     const active = users.filter(u=>u.status==="active").length;
     const deactivated = users.filter(u=>u.status==="deactivated").length;
     const todayCount = logins.filter(l=>l.time.startsWith("Jun 18")).length;
+    const pendingCount = parseInt(document.getElementById("statPending").textContent, 10) || 0;
 
     document.getElementById("repTotal").textContent = users.length;
     document.getElementById("repActive").textContent = active;
     document.getElementById("repDeactivated").textContent = deactivated;
     document.getElementById("repLogins").textContent = todayCount;
+    document.getElementById("repPending").textContent = pendingCount;
     document.getElementById("repTime").textContent = new Date().toLocaleString();
 
     document.getElementById("reportPreview").classList.add("show");
@@ -365,3 +492,4 @@ new Chart(document.getElementById("uptimeChart"), {
 renderUsers();
 renderLogins();
 renderResources();
+loadCounselorRequests(); // populates statPending + assignments tab even before it's opened

@@ -170,8 +170,20 @@ $studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.prava
                 </button>
             </div>
 
-            <!-- Progress Chart -->
+            <!-- Counselor Support -->
             <div class="dash-card">
+                <h3><i class="fa-solid fa-hand-holding-heart"></i> Counselor Support</h3>
+
+                <div id="counselorRequestStatus">
+                    <p style="font-size:13px;color:#aaa;">Checking your request status…</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Progress Chart (own row, was paired with Profile before) -->
+        <div class="dashboard-cols" style="margin-top:20px;">
+            <div class="dash-card" style="grid-column: 1 / -1;">
                 <h3><i class="fa-solid fa-chart-line"></i> Wellbeing Progress</h3>
 
                 <div id="chartArea">
@@ -185,7 +197,6 @@ $studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.prava
                     <p id="latestScore" style="margin-top:12px;font-size:13px;color:#8b5cf6;font-weight:600;"></p>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -530,6 +541,80 @@ function loadHistoryGraph() {
     });
 }
 
+/* Counselor Support — request flow */
+function loadCounselorRequestStatus() {
+    const el = document.getElementById('counselorRequestStatus');
+    fetch('get_my_request.php')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                el.innerHTML = '<p style="font-size:13px;color:#aaa;">Could not load request status.</p>';
+                return;
+            }
+
+            const r = data.request;
+
+            if (!r) {
+                el.innerHTML = `
+                    <p style="font-size:14px;color:#666;line-height:1.7;margin-bottom:16px;">
+                        Want to talk to someone? Request a counselor and our admin team will match you with one.
+                    </p>
+                    <button class="checkin-btn" onclick="requestCounselor()">
+                        <i class="fa-solid fa-hand-holding-heart"></i> Request a Counselor
+                    </button>`;
+                return;
+            }
+
+            if (r.status === 'pending') {
+                el.innerHTML = `
+                    <div class="mood-today" style="background:#fef3c7;color:#92400e;">
+                        <i class="fa-solid fa-clock"></i>
+                        Your request is pending — an admin will assign you a counselor soon.
+                    </div>`;
+            } else if (r.status === 'assigned') {
+                el.innerHTML = `
+                    <div class="mood-today" style="background:#f5f0ff;color:#6d28d9;">
+                        <i class="fa-solid fa-user-clock"></i>
+                        ${r.counselor_title || ''} ${r.counselor_name} has been assigned and is reviewing your request.
+                    </div>`;
+            } else if (r.status === 'accepted') {
+                el.innerHTML = `
+                    <div class="profile-row" style="margin-bottom:14px;">
+                        <img class="profile-avatar" src="${r.counselor_avatar || 'https://i.pravatar.cc/60?img=33'}" alt="Counselor">
+                        <div>
+                            <p class="profile-name">${r.counselor_title || ''} ${r.counselor_name}</p>
+                            <p class="profile-sub">Your assigned counselor</p>
+                        </div>
+                    </div>
+                    <div class="mood-today" style="background:#d1fae5;color:#065f46;">
+                        <i class="fa-solid fa-circle-check"></i> You're all set — reach out any time.
+                    </div>`;
+            } else if (r.status === 'declined') {
+                el.innerHTML = `
+                    <p style="font-size:14px;color:#666;line-height:1.7;margin-bottom:16px;">
+                        Your previous request couldn't be matched. The admin team will reassign you shortly, or you can submit a new request.
+                    </p>
+                    <button class="checkin-btn" onclick="requestCounselor()">
+                        <i class="fa-solid fa-hand-holding-heart"></i> Request a Counselor
+                    </button>`;
+            }
+        })
+        .catch(() => {
+            el.innerHTML = '<p style="font-size:13px;color:#aaa;">Could not load request status.</p>';
+        });
+}
+
+function requestCounselor() {
+    const formData = new FormData();
+    fetch('request_counselor.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            loadCounselorRequestStatus();
+        })
+        .catch(() => alert('Could not submit your request. Please try again.'));
+}
+
 /* Academic data — calls the real PHP endpoint backed by the grades/attendance tables */
 function loadAcademicData() {
     fetch('get_students_academic.php')
@@ -623,6 +708,7 @@ window.onload = function () {
     loadAffirmation();
     loadHistoryGraph();
     loadAcademicData();
+    loadCounselorRequestStatus();
 };
 </script>
 

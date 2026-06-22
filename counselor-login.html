@@ -516,7 +516,7 @@ function loginCounselor() {
             sessionStorage.setItem('cEmail',    data.email);
             sessionStorage.setItem('cDept',     data.dept);
             sessionStorage.setItem('cAvatar',   data.avatar || '');
-            window.location.href = 'counselor-portal.html';
+            window.location.href = 'counselor-portal.php';
         } else {
             btn.classList.remove('loading');
             btn.disabled = false;

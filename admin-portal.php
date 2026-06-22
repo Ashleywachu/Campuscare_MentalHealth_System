@@ -1,3 +1,15 @@
+<?php
+session_start();
+
+// Server-side auth gate
+if (!isset($_SESSION['adminLoggedIn']) || $_SESSION['adminLoggedIn'] !== true) {
+    header('Location: admin-login.html');
+    exit;
+}
+
+$adminName = htmlspecialchars($_SESSION['adminName'] ?? 'Admin User');
+$adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -79,7 +91,7 @@
             </div>
             <div class="card">
                 <div class="label">Pending Requests</div>
-                <div class="value warn" id="statPending">17</div>
+                <div class="value warn" id="statPending">0</div>
             </div>
         </div>
 
@@ -179,27 +191,35 @@
 
     </section>
 
-    <!--COUNSELOR ASSIGNMENT-->
+    <!--COUNSELOR ASSIGNMENT (live data) -->
     <section id="assignments" class="content">
 
         <div class="panel">
-            <h3>Assign a counselor</h3>
-            <p class="panel-sub">Match a student with the right counselor.</p>
+            <h3>Pending requests</h3>
+            <p class="panel-sub">Students waiting to be matched with a counselor.</p>
+            <div class="table-wrap" id="pendingRequestsWrap">
+                <p style="font-size:13px;color:var(--text-muted);padding:8px 0;">Loading requests…</p>
+            </div>
+        </div>
 
-            <label>Student</label>
-            <select id="assignStudent">
-                <option>STU-104522 — A. Kimani</option>
-                <option>STU-872134 — J. Otieno</option>
-            </select>
-
-            <label>Counselor</label>
-            <select id="assignCounselor">
-                <option>Dr. Sarah Mwangi</option>
-                <option>Mr. James Achieng</option>
-            </select>
-
-            <div class="btn-row" style="margin-top:18px">
-                <button class="btn primary" onclick="assignCounselor()">Assign counselor</button>
+        <div class="panel">
+            <h3>All requests</h3>
+            <p class="panel-sub">Full history — pending, assigned, accepted, and declined.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                            <th>Counselor</th>
+                            <th>Requested</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allRequestsBody">
+                        <tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Loading…</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -294,7 +314,7 @@
                 <div class="row"><span>Active accounts</span><span id="repActive">0</span></div>
                 <div class="row"><span>Deactivated accounts</span><span id="repDeactivated">0</span></div>
                 <div class="row"><span>Logins today</span><span id="repLogins">0</span></div>
-                <div class="row"><span>Pending requests</span><span id="repPending">17</span></div>
+                <div class="row"><span>Pending requests</span><span id="repPending">0</span></div>
                 <div class="row"><span>Report generated</span><span id="repTime">—</span></div>
             </div>
         </div>
@@ -341,10 +361,10 @@
             <h3>Admin profile</h3>
 
             <label>Full name</label>
-            <input type="text" value="Admin User">
+            <input type="text" value="<?= $adminName ?>">
 
             <label>Email address</label>
-            <input type="email" value="admin@campuscare.edu">
+            <input type="email" value="<?= $adminEmail ?>">
 
             <label>New password</label>
             <input type="password" placeholder="Leave blank to keep current password">

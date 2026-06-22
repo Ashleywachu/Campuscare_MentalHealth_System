@@ -511,10 +511,10 @@ body{
 
         <!-- FORM -->
         <div class="form-group">
-            <label for="email">Username</label>
+            <label for="username">Username</label>
             <div class="input-wrap">
                 <i class="fa-solid fa-user prefix"></i>
-                <input type="text" id="email" placeholder="admin" autocomplete="username">
+                <input type="text" id="username" placeholder="admin" autocomplete="username">
             </div>
         </div>
 
@@ -559,28 +559,28 @@ body{
 
 <script>
 
-/* CREDENTIALS*/
-
-const VALID_CREDENTIALS = {
-    username:    'admin',
-    password: 'Admin@2026',
-
-    username2: 'sysop',
-    password2: 'Admin@2026'
-};
-
 /* LOGIN LOGIC */
 
 function handleLogin() {
-    const username  = document.getElementById('username').value.trim();
+    // Bug fix 1: input field has id="username", not id="email"
+    const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     const errorEl  = document.getElementById('errorMsg');
+    const btn      = document.getElementById('loginBtn');
+
+    // Clear any previous error
+    errorEl.classList.remove('show');
 
     if (!username || !password) {
-        errorEl.textContent = 'Please fill in all fields.';
-        errorEl.style.display = 'block';
+        // Bug fix 2 & 3: error text lives in child <span id="errorText">, use classList for show
+        document.getElementById('errorText').textContent = 'Please fill in all fields.';
+        errorEl.classList.add('show');
         return;
     }
+
+    // Show loading state on button
+    btn.classList.add('loading');
+    btn.disabled = true;
 
     const formData = new FormData();
     formData.append('username', username);
@@ -593,20 +593,21 @@ function handleLogin() {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            // Store in sessionStorage for the portal to read
-            sessionStorage.setItem('aLoggedIn', 'true');
-            sessionStorage.setItem('username',    data.username);
-            sessionStorage.setItem('fullname', data.full_name);
-            sessionStorage.setItem('Email', data.email);
-            window.location.href = 'admin-portal.html';
+            // Bug fix 4: portal is admin-portal.php not admin-portal.html
+            window.location.href = 'admin-portal.php';
         } else {
-            errorEl.textContent = data.message;
-            errorEl.style.display = 'block';
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            // Bug fix 2 & 3 again: use errorText span + classList
+            document.getElementById('errorText').textContent = data.message;
+            errorEl.classList.add('show');
         }
     })
     .catch(() => {
-        errorEl.textContent = 'Cannot connect to server. Check XAMPP is running.';
-        errorEl.style.display = 'block';
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        document.getElementById('errorText').textContent = 'Cannot connect to server. Check XAMPP is running.';
+        errorEl.classList.add('show');
     });
 }
 

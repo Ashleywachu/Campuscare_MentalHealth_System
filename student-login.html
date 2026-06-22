@@ -450,7 +450,7 @@ function login() {
             sessionStorage.setItem('userName',    data.name);
             sessionStorage.setItem('admissionNo', admission);
             sessionStorage.setItem('userAvatar',  data.avatar || '');
-            window.location.href = 'student-portal.html';
+            window.location.href = 'student-portal.php';
         } else {
             btn.classList.remove('loading');
             btn.disabled = false;
