@@ -51,16 +51,19 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
             <i class="fa-solid fa-users"></i> My Students
         </button></li>
         <li><button onclick="switchTab('academics', this)">
-            <i class="fa-solid fa-graduation-cap"></i> Academic Overview
+            <i class="fa-solid fa-graduation-cap"></i> Academics
         </button></li>
         <li><button onclick="switchTab('sessions', this)">
             <i class="fa-solid fa-calendar-check"></i> Sessions
         </button></li>
         <li><button onclick="switchTab('trends', this)">
-            <i class="fa-solid fa-chart-line"></i> Wellness Trends
+            <i class="fa-solid fa-chart-line"></i> Trends
         </button></li>
         <li><button onclick="switchTab('notes', this)">
             <i class="fa-solid fa-notes-medical"></i> Notes
+        </button></li>
+        <li><button onclick="switchTab('announcements', this)">
+            <i class="fa-solid fa-bullhorn"></i> Announcements
         </button></li>
         <li><button onclick="switchTab('profile', this)">
             <i class="fa-solid fa-id-badge"></i> Profile
@@ -68,6 +71,9 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
     </ul>
 
     <div class="c-nav-right">
+        <button class="logout-btn" onclick="toggleTheme()" title="Toggle dark / light mode">
+            <i class="fa-solid fa-moon theme-toggle-icon"></i>
+        </button>
         <a href="Home.html" class="home-link">
             <i class="fa-solid fa-arrow-left"></i> Main Site
         </a>
@@ -96,7 +102,7 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
             </div>
             <div class="c-stat-pills">
                 <div class="stat-pill">
-                    <div class="s-num">24</div>
+                    <div class="s-num" id="statStudents">0</div>
                     <div class="s-label">Students</div>
                 </div>
                 <div class="stat-pill">
@@ -272,6 +278,22 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
 </div>
 
 
+<!-- ANNOUNCEMENTS -->
+<div id="announcements" class="c-page">
+    <div class="c-page-header">
+        <p class="eyebrow">Platform-wide</p>
+        <h2>Announcements</h2>
+    </div>
+    <div class="c-body" style="margin-top:0; padding-top:0;">
+        <div class="c-card">
+            <div id="announcementHistory">
+                <p style="font-size:13px;color:#aaa;">Loading announcements…</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <!-- PROFILE -->
 <div id="profile" class="c-page">
     <div class="c-page-header">
@@ -343,25 +365,10 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
 
 
 <script>
-/* DEMO DATA — Sessions/Wellness Trends remain placeholders for now.
-   Requests are now live, pulled from get_my_assigned_requests.php. */
-const STUDENTS = [
-    { id: 'ADM-2024-001', name: 'Amanda Wanjiru',   avatar: 'https://i.pravatar.cc/80?img=47', score: 29, risk: 'critical', trend: [58,45,39,29] },
-    { id: 'ADM-2024-002', name: 'Brian Otieno',     avatar: 'https://i.pravatar.cc/80?img=12', score: 42, risk: 'support',  trend: [70,65,55,42] },
-    { id: 'ADM-2024-003', name: 'Cynthia Mwangi',   avatar: 'https://i.pravatar.cc/80?img=25', score: 81, risk: 'stable',   trend: [60,70,75,81] },
-    { id: 'ADM-2024-004', name: 'David Kimani',     avatar: 'https://i.pravatar.cc/80?img=15', score: 67, risk: 'stable',   trend: [55,60,62,67] },
-    { id: 'ADM-2024-005', name: 'Esther Njoroge',   avatar: 'https://i.pravatar.cc/80?img=44', score: 35, risk: 'support',  trend: [65,50,44,35] },
-];
-
 let REQUESTS = []; // populated by loadAssignedRequests()
-
-const SESSIONS = [
-    { studentId: 'ADM-2024-001', name: 'Amanda Wanjiru',  avatar: 'https://i.pravatar.cc/40?img=47', date: 'June 18, 2026', time: '10:00 AM', attendance: 'pending' },
-    { studentId: 'ADM-2024-002', name: 'Brian Otieno',    avatar: 'https://i.pravatar.cc/40?img=12', date: 'June 18, 2026', time: '11:30 AM', attendance: 'pending' },
-    { studentId: 'ADM-2024-003', name: 'Cynthia Mwangi',  avatar: 'https://i.pravatar.cc/40?img=25', date: 'June 16, 2026', time: '2:00 PM',  attendance: 'attended' },
-    { studentId: 'ADM-2024-004', name: 'David Kimani',    avatar: 'https://i.pravatar.cc/40?img=15', date: 'June 15, 2026', time: '9:00 AM',  attendance: 'missed' },
-    { studentId: 'ADM-2024-005', name: 'Esther Njoroge',  avatar: 'https://i.pravatar.cc/40?img=44', date: 'June 17, 2026', time: '3:30 PM',  attendance: 'attended' },
-];
+let ACADEMIC_DATA = []; // populated by loadStudentAcademics()
+let ASSIGNED_STUDENTS = []; // merge of accepted requests + academic data, rebuilt by buildAssignedStudents()
+let SESSIONS = []; // populated by loadSessions(), backed by the real `sessions` table
 
 /* LOG OUT */
 function signOut() {
@@ -372,14 +379,35 @@ function signOut() {
 
 /* INIT PORTAL */
 function initPortal() {
-    renderDashRisk();
-    renderFullStudents();
-    renderSessions();
-    renderTrends();
+    loadSessions();
     populateNoteSelect();
     loadSavedNotes();
-    loadStudentAcademics();
-    loadAssignedRequests(); // fetches REQUESTS, then renders request-dependent UI itself
+    loadStudentAcademics();      // fetches ACADEMIC_DATA, then calls buildAssignedStudents()
+    loadAssignedRequests();      // fetches REQUESTS, then calls buildAssignedStudents()
+}
+
+/* Combine accepted requests (names/avatars) with academic data (scores/risk flags)
+   into one list of students actually assigned to this counselor. */
+function buildAssignedStudents() {
+    const accepted = REQUESTS.filter(r => r.status === 'accepted');
+
+    ASSIGNED_STUDENTS = accepted.map(r => {
+        const academic = ACADEMIC_DATA.find(a => a.admission_no === r.admission_no);
+        const flag = academic ? academic.academic_flag : 'Normal';
+        const risk = flag === 'At Risk' ? 'critical' : flag === 'Monitor' ? 'support' : 'stable';
+        return {
+            id: r.admission_no,
+            name: r.student_name,
+            avatar: r.student_avatar || 'https://i.pravatar.cc/80?img=33',
+            score: academic && academic.avg_score !== null ? Math.round(academic.avg_score) : 0,
+            risk
+        };
+    });
+
+    renderDashRisk();
+    renderFullStudents();
+    renderTrends();
+    populateNoteSelect();
 }
 
 /* TAB SWITCHING */
@@ -391,6 +419,33 @@ function switchTab(id, btn) {
         btn.classList.add('active');
     }
     window.scrollTo(0, 0);
+    if (id === 'announcements') loadAnnouncements();
+}
+
+/* ANNOUNCEMENTS — read-only, sent by admin/dean */
+function loadAnnouncements() {
+    fetch('get_announcements.php')
+        .then(res => res.json())
+        .then(data => {
+            const el = document.getElementById('announcementHistory');
+            if (!data.success || !data.announcements.length) {
+                el.innerHTML = '<p style="font-size:13px;color:#aaa;">No announcements yet.</p>';
+                return;
+            }
+            el.innerHTML = data.announcements.map(a => `
+                <div class="note-entry">
+                    <div class="note-meta">
+                        <span>${a.sender_name} (${a.sender_role})</span>
+                        <span>${new Date(a.created_at).toLocaleString()}</span>
+                    </div>
+                    <p>${a.message}</p>
+                </div>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById('announcementHistory').innerHTML =
+                '<p style="font-size:13px;color:#aaa;">Could not load announcements.</p>';
+        });
 }
 
 /* RENDER HELPERS */
@@ -416,10 +471,13 @@ function renderStudentCard(s, actions = '') {
 
 /* DASHBOARD */
 function renderDashRisk() {
-    const risk = STUDENTS.filter(s => s.risk !== 'stable');
-    document.getElementById('dashRiskList').innerHTML = risk.map(s =>
-        renderStudentCard(s, `<button class="btn btn-teal btn-sm" onclick="switchTab('notes',null)">Add Note</button>`)
-    ).join('');
+    const risk = ASSIGNED_STUDENTS.filter(s => s.risk !== 'stable');
+    document.getElementById('dashRiskList').innerHTML = risk.length
+        ? risk.map(s => renderStudentCard(s, `<button class="btn btn-teal btn-sm" onclick="switchTab('notes',null)">Add Note</button>`)).join('')
+        : '<p style="font-size:13px;color:#aaa;padding:8px 0;">No high-risk students right now.</p>';
+
+    document.getElementById('statStudents').textContent = ASSIGNED_STUDENTS.length;
+    document.getElementById('statAlerts').textContent = risk.length;
 }
 
 /* REQUESTS — live data */
@@ -444,6 +502,7 @@ function loadAssignedRequests() {
 
             renderDashRequests();
             renderFullRequests();
+            buildAssignedStudents();
         })
         .catch(() => {
             document.getElementById('dashRequestList').innerHTML =
@@ -508,21 +567,75 @@ function respondToRequest(requestId, action) {
 
 /* STUDENTS */
 function renderFullStudents() {
-    document.getElementById('fullStudentList').innerHTML = STUDENTS.map(s =>
-        renderStudentCard(s, `
-            <button class="btn btn-outline btn-sm" onclick="switchTab('notes',null)">
-                <i class="fa-solid fa-notes-medical"></i> Note
-            </button>
-            <button class="btn btn-teal btn-sm" onclick="switchTab('trends',null)">
-                <i class="fa-solid fa-chart-line"></i> Trend
-            </button>
-        `)
-    ).join('');
+    document.getElementById('fullStudentList').innerHTML = ASSIGNED_STUDENTS.length
+        ? ASSIGNED_STUDENTS.map(s =>
+            renderStudentCard(s, `
+                <button class="btn btn-outline btn-sm" onclick="switchTab('notes',null)">
+                    <i class="fa-solid fa-notes-medical"></i> Note
+                </button>
+                <button class="btn btn-teal btn-sm" onclick="switchTab('trends',null)">
+                    <i class="fa-solid fa-chart-line"></i> Trend
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="referStudent('${s.id}', '${s.name.replace(/'/g, "\\'")}', '${s.risk}')">
+                    <i class="fa-solid fa-people-arrows"></i> Refer to Dean
+                </button>
+            `)
+        ).join('')
+        : '<p style="font-size:13px;color:#aaa;padding:8px 0;">No students assigned to you yet — accepted requests will appear here.</p>';
 }
 
-/*SESSIONS*/
+/* REFER TO DEAN */
+function referStudent(studentId, studentName, currentRisk) {
+    const riskMap = { critical: 'High', support: 'Medium', stable: 'Low' };
+    const suggestedRisk = riskMap[currentRisk] || 'Medium';
+
+    const riskLevel = prompt(`Risk level for ${studentName}? (Low / Medium / High)`, suggestedRisk);
+    if (!riskLevel || !['Low', 'Medium', 'High'].includes(riskLevel.trim())) {
+        if (riskLevel !== null) showToast('Risk level must be Low, Medium, or High.');
+        return;
+    }
+
+    const category = prompt(`Issue category for ${studentName}? (e.g. Academic Pressure, Stress & Anxiety)`);
+    if (!category || !category.trim()) return;
+
+    const formData = new FormData();
+    formData.append('student_id', studentId);
+    formData.append('risk_level', riskLevel.trim());
+    formData.append('category', category.trim());
+
+    fetch('refer_student.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => showToast(data.message || 'Referral submitted.'))
+        .catch(() => showToast('Could not refer student. Please try again.'));
+}
+
+/*SESSIONS — live data from the `sessions` table*/
+function loadSessions() {
+    fetch('get_my_sessions.php')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                document.getElementById('sessionsBody').innerHTML =
+                    '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">Could not load sessions.</td></tr>';
+                return;
+            }
+            SESSIONS = data.sessions;
+            renderSessions();
+        })
+        .catch(() => {
+            document.getElementById('sessionsBody').innerHTML =
+                '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">Could not load sessions.</td></tr>';
+        });
+}
+
 function renderSessions() {
-    document.getElementById('sessionsBody').innerHTML = SESSIONS.map((s, i) => {
+    if (!SESSIONS.length) {
+        document.getElementById('sessionsBody').innerHTML =
+            '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No sessions booked yet.</td></tr>';
+        return;
+    }
+
+    document.getElementById('sessionsBody').innerHTML = SESSIONS.map(s => {
         const attClass = s.attendance === 'attended' ? 'att-attended' : s.attendance === 'missed' ? 'att-missed' : 'att-pending';
         const attLabel = s.attendance === 'attended' ? '<i class="fa-solid fa-circle-check"></i> Attended' :
                          s.attendance === 'missed'   ? '<i class="fa-solid fa-circle-xmark"></i> Missed' :
@@ -530,22 +643,22 @@ function renderSessions() {
         return `<tr>
             <td>
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <img src="${s.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+                    <img src="${s.student_avatar || 'https://i.pravatar.cc/40?img=33'}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
                     <div>
-                        <div style="font-weight:600;font-size:13px;">${s.name}</div>
-                        <div style="font-size:11px;color:#aaa;">${s.studentId}</div>
+                        <div style="font-weight:600;font-size:13px;">${s.student_name}</div>
+                        <div style="font-size:11px;color:#aaa;">${s.student_id}</div>
                     </div>
                 </div>
             </td>
-            <td>${s.date}</td>
-            <td>${s.time}</td>
+            <td>${new Date(s.session_date).toLocaleDateString()}</td>
+            <td>${s.session_time || '—'}</td>
             <td><span class="att-badge ${attClass}">${attLabel}</span></td>
             <td>
                 <div style="display:flex;gap:6px;">
-                    <button class="btn btn-green btn-sm" onclick="markAttendance(${i},'attended')">
+                    <button class="btn btn-green btn-sm" onclick="markAttendance(${s.id},'attended')">
                         <i class="fa-solid fa-check"></i> Attended
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="markAttendance(${i},'missed')">
+                    <button class="btn btn-danger btn-sm" onclick="markAttendance(${s.id},'missed')">
                         <i class="fa-solid fa-xmark"></i> Missed
                     </button>
                 </div>
@@ -559,7 +672,13 @@ const trendCharts = {};
 
 function renderTrends() {
     const grid = document.getElementById('trendGrid');
-    grid.innerHTML = STUDENTS.map(s => `
+
+    if (!ASSIGNED_STUDENTS.length) {
+        grid.innerHTML = '<p style="font-size:13px;color:#aaa;padding:8px 0;">No students assigned to you yet.</p>';
+        return;
+    }
+
+    grid.innerHTML = ASSIGNED_STUDENTS.map(s => `
         <div class="trend-card">
             <div class="trend-card-header">
                 <img src="${s.avatar}" alt="${s.name}">
@@ -575,16 +694,16 @@ function renderTrends() {
     `).join('');
 
     setTimeout(() => {
-        STUDENTS.forEach(s => {
+        ASSIGNED_STUDENTS.forEach(s => {
             const ctx = document.getElementById('chart-' + s.id);
             if (!ctx) return;
             if (trendCharts[s.id]) { trendCharts[s.id].destroy(); }
             trendCharts[s.id] = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Wk 1','Wk 2','Wk 3','Wk 4'],
+                    labels: ['Current avg'],
                     datasets: [{
-                        data: s.trend,
+                        data: [s.score],
                         borderColor: s.risk === 'critical' ? '#ef4444' : s.risk === 'support' ? '#f59e0b' : '#7c3aed',
                         backgroundColor: s.risk === 'critical' ? 'rgba(239,68,68,0.08)' : s.risk === 'support' ? 'rgba(245,158,11,0.08)' : 'rgba(124,58,237,0.08)',
                         borderWidth: 2.5,
@@ -618,9 +737,12 @@ function loadStudentAcademics() {
             return;
         }
 
+        ACADEMIC_DATA = data.students;
+        buildAssignedStudents();
+
         if (!data.students.length) {
             document.getElementById('academicOverviewBody').innerHTML =
-                '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">No students found.</td></tr>';
+                '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">No students assigned to you yet.</td></tr>';
             return;
         }
 
@@ -647,7 +769,7 @@ function loadStudentAcademics() {
 function populateNoteSelect() {
     const sel = document.getElementById('noteStudent');
     sel.innerHTML = '<option value="">— Select student —</option>';
-    STUDENTS.forEach(s => {
+    ASSIGNED_STUDENTS.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.id;
         opt.textContent = s.name + ' (' + s.id + ')';
@@ -660,39 +782,61 @@ function saveNote() {
     const text      = document.getElementById('noteText').value.trim();
     if (!studentId || !text) { showToast('Select a student and write a note first.'); return; }
 
-    const student = STUDENTS.find(s => s.id === studentId);
-    const notes   = JSON.parse(localStorage.getItem('counselorNotes') || '[]');
-    const now     = new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const formData = new FormData();
+    formData.append('student_id', studentId);
+    formData.append('note', text);
 
-    notes.unshift({ studentId, name: student.name, avatar: student.avatar, text, date: now });
-    localStorage.setItem('counselorNotes', JSON.stringify(notes.slice(0, 50)));
-
-    document.getElementById('noteText').value = '';
-    document.getElementById('noteStudent').value = '';
-    loadSavedNotes();
-    showToast('Note saved for ' + student.name);
+    fetch('save_counselor_note.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            showToast(data.message || 'Note saved.');
+            if (data.success) {
+                document.getElementById('noteText').value = '';
+                document.getElementById('noteStudent').value = '';
+                loadSavedNotes();
+            }
+        })
+        .catch(() => showToast('Could not save note. Please try again.'));
 }
 
 function loadSavedNotes() {
-    const notes = JSON.parse(localStorage.getItem('counselorNotes') || '[]');
-    const el    = document.getElementById('savedNotesList');
-    if (!notes.length) { el.innerHTML = '<p style="font-size:13px;color:#aaa;">No notes saved yet.</p>'; return; }
-    el.innerHTML = notes.slice(0, 6).map(n => `
-        <div class="note-entry">
-            <div class="note-meta">
-                <span><img src="${n.avatar}" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:5px;">${n.name}</span>
-                <span>${n.date}</span>
-            </div>
-            <p>${n.text}</p>
-        </div>
-    `).join('');
+    fetch('get_counselor_notes.php')
+        .then(res => res.json())
+        .then(data => {
+            const el = document.getElementById('savedNotesList');
+            if (!data.success || !data.notes.length) {
+                el.innerHTML = '<p style="font-size:13px;color:#aaa;">No notes saved yet.</p>';
+                return;
+            }
+            el.innerHTML = data.notes.slice(0, 6).map(n => `
+                <div class="note-entry">
+                    <div class="note-meta">
+                        <span><img src="${n.student_avatar || 'https://i.pravatar.cc/40?img=33'}" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:5px;">${n.student_name}</span>
+                        <span>${new Date(n.created_at).toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}</span>
+                    </div>
+                    <p>${n.note}</p>
+                </div>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById('savedNotesList').innerHTML =
+                '<p style="font-size:13px;color:#aaa;">Could not load notes.</p>';
+        });
 }
 
 /* ACTIONS */
-function markAttendance(index, status) {
-    SESSIONS[index].attendance = status;
-    renderSessions();
-    showToast(SESSIONS[index].name + ' marked as ' + status + '.');
+function markAttendance(sessionId, status) {
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    formData.append('attendance', status);
+
+    fetch('mark_session_attendance.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            showToast(data.message || 'Attendance updated.');
+            if (data.success) loadSessions();
+        })
+        .catch(() => showToast('Could not update attendance. Please try again.'));
 }
 
 /* PROFILE */
@@ -738,5 +882,6 @@ window.onload = function () {
     initPortal();
 };
 </script>
+<script src="theme.js"></script>
 </body>
 </html>

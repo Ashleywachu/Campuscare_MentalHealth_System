@@ -1,29 +1,6 @@
-/*SAMPLE DATA*/
-
-let users = [
-    { id:"STU-104522", name:"A. Kimani", role:"Student", status:"active" },
-    { id:"STU-872134", name:"J. Otieno", role:"Student", status:"active" },
-    { id:"STU-551290", name:"L. Wanjiru", role:"Student", status:"deactivated" },
-    { id:"CNS-200145", name:"Dr. Sarah Mwangi", role:"Counselor", status:"active" },
-    { id:"CNS-200871", name:"Mr. James Achieng", role:"Counselor", status:"active" },
-    { id:"DNS-300120", name:"Prof. R. Otieno", role:"Dean", status:"active" },
-];
-
-let logins = [
-    { name:"A. Kimani", role:"Student", time:"Jun 18, 2026 — 9:14 AM", device:"Chrome · Windows" },
-    { name:"Dr. Sarah Mwangi", role:"Counselor", time:"Jun 18, 2026 — 8:52 AM", device:"Safari · macOS" },
-    { name:"J. Otieno", role:"Student", time:"Jun 18, 2026 — 8:10 AM", device:"App · Android" },
-    { name:"Mr. James Achieng", role:"Counselor", time:"Jun 17, 2026 — 6:45 PM", device:"Chrome · macOS" },
-    { name:"Prof. R. Otieno", role:"Dean", time:"Jun 17, 2026 — 4:02 PM", device:"Edge · Windows" },
-];
-
-let resources = [
-    { title:"Managing Exam Stress", type:"Article", added:"Jun 12, 2026" },
-    { title:"5-Minute Breathing Reset", type:"Audio", added:"Jun 8, 2026" },
-    { title:"Sleep & Study Balance", type:"Video", added:"May 29, 2026" },
-];
-
-let idCounter = 900;
+let users = [];
+let logins = [];
+let resources = [];
 
 /*NAVIGATION*/
 /* Each nav item has data-target="dashboard" / "users" / etc.
@@ -39,6 +16,7 @@ const titles = {
     reports:["Reports & Analytics","Snapshot the platform's current state."],
     backup:["Backup & Recovery","Protect platform data."],
     announcements:["Announcements","Message every student and counselor."],
+    messages:["Contact Messages","Submissions from the public Contact page."],
     profile:["Profile Settings","Manage your admin account."]
 };
 
@@ -71,6 +49,15 @@ function showSection(section){
     if(section === "assignments"){
         loadCounselorRequests();
     }
+    if(section === "users"){
+        loadUsers();
+    }
+    if(section === "announcements"){
+        loadAnnouncements();
+    }
+    if(section === "messages"){
+        loadContactMessages();
+    }
 }
 
 function logout(){
@@ -93,65 +80,46 @@ setInterval(tickClock, 30000);
 
 /*RENDER: USERS*/
 
+/*USERS — live data, read directly from students/counselors/dean/admins tables*/
+
+function loadUsers(){
+    fetch('get_all_users.php')
+        .then(res => res.json())
+        .then(data => {
+            if(!data.success){
+                document.getElementById("userTableBody").innerHTML =
+                    '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Could not load users.</td></tr>';
+                return;
+            }
+            users = data.users;
+            renderUsers();
+        })
+        .catch(() => {
+            document.getElementById("userTableBody").innerHTML =
+                '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Could not load users.</td></tr>';
+        });
+}
+
 function renderUsers(){
 
     const body = document.getElementById("userTableBody");
-    body.innerHTML = "";
 
-    users.forEach((u, i)=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td class="id">${u.id}</td>
-            <td>${u.name}</td>
+    if(!users.length){
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No users found.</td></tr>';
+        renderStats();
+        return;
+    }
+
+    body.innerHTML = users.map(u => `
+        <tr>
+            <td class="id">${u.user_id}</td>
+            <td>${u.full_name}</td>
             <td>${u.role}</td>
-            <td><span class="badge ${u.status}">${u.status === "active" ? "Active" : "Deactivated"}</span></td>
-            <td>
-                <div class="row-actions">
-                    <button class="btn ghost small" onclick="editUser(${i})">Edit</button>
-                    <button class="btn ghost small" onclick="toggleStatus(${i})">${u.status === "active" ? "Deactivate" : "Activate"}</button>
-                    <button class="btn danger small" onclick="deleteUser(${i})">Delete</button>
-                </div>
-            </td>
-        `;
-        body.appendChild(tr);
-    });
+            <td>${u.email}</td>
+        </tr>
+    `).join('');
 
     renderStats();
-}
-
-function addUser(){
-    const name = prompt("Full name:");
-    if(!name) return;
-    const role = prompt("Role (Student / Counselor / Dean / Admin):", "Student");
-    if(!role) return;
-
-    idCounter++;
-    const r = role.trim().toLowerCase();
-    let prefix = "STU";
-    if(r.startsWith("counsel")) prefix = "CNS";
-    else if(r.startsWith("dean")) prefix = "DNS";
-    else if(r.startsWith("admin")) prefix = "ADM";
-
-    users.push({ id:`${prefix}-${idCounter}`, name, role, status:"active" });
-    renderUsers();
-}
-
-function editUser(i){
-    const name = prompt("Full name:", users[i].name);
-    if(!name) return;
-    users[i].name = name;
-    renderUsers();
-}
-
-function toggleStatus(i){
-    users[i].status = users[i].status === "active" ? "deactivated" : "active";
-    renderUsers();
-}
-
-function deleteUser(i){
-    if(!confirm(`Remove ${users[i].name} (${users[i].id})? This can't be undone.`)) return;
-    users.splice(i,1);
-    renderUsers();
 }
 
 
@@ -161,9 +129,10 @@ function renderStats(){
 
     const students = users.filter(u=>u.role==="Student").length;
     const counselors = users.filter(u=>u.role==="Counselor").length;
-    const active = users.filter(u=>u.status==="active").length;
-    const deactivated = users.filter(u=>u.status==="deactivated").length;
     const total = users.length || 1;
+    // No deactivation feature exists yet — every account read from the DB counts as active.
+    const active = users.length;
+    const deactivated = 0;
 
     document.getElementById("statStudents").textContent = students;
     document.getElementById("statCounselors").textContent = counselors;
@@ -195,6 +164,12 @@ function renderLogins(){
     const body = document.getElementById("loginTableBody");
     body.innerHTML = "";
 
+    if(!logins.length){
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No login activity recorded yet.</td></tr>';
+        document.getElementById("statLoginsToday").textContent = 0;
+        return;
+    }
+
     logins.forEach(l=>{
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -215,6 +190,11 @@ function renderLogins(){
 function renderResources(){
     const body = document.getElementById("resourceTableBody");
     body.innerHTML = "";
+
+    if(!resources.length){
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No resources published yet.</td></tr>';
+        return;
+    }
 
     resources.forEach((r,i)=>{
         const tr = document.createElement("tr");
@@ -268,7 +248,7 @@ function deleteResource(i){
 let counselorsList = []; // populated by loadCounselorRequests()
 
 function loadCounselorRequests(){
-    fetch('get_counselor_requests.php')
+    fetch('get_counselor_request.php')
         .then(res => res.json())
         .then(data => {
             if(!data.success){
@@ -394,8 +374,8 @@ function assignCounselor(requestId){
 /*REPORTS*/
 
 function generateReport(){
-    const active = users.filter(u=>u.status==="active").length;
-    const deactivated = users.filter(u=>u.status==="deactivated").length;
+    const active = users.length;
+    const deactivated = 0;
     const todayCount = logins.filter(l=>l.time.startsWith("Jun 18")).length;
     const pendingCount = parseInt(document.getElementById("statPending").textContent, 10) || 0;
 
@@ -429,7 +409,7 @@ function restoreBackup(){
     }
 }
 
-/* ANNOUNCEMENTS*/
+/* ANNOUNCEMENTS — live, shared across all portals */
 
 function sendAnnouncement(){
     const text = document.getElementById("announcementText").value.trim();
@@ -437,13 +417,70 @@ function sendAnnouncement(){
         alert("Write something before sending.");
         return;
     }
-    const item = document.createElement("p");
-    item.style.fontSize = "12px";
-    item.style.color = "var(--text-muted)";
-    item.style.marginTop = "10px";
-    item.textContent = `Sent ${new Date().toLocaleString()} — "${text}"`;
-    document.getElementById("announcementHistory").prepend(item);
-    document.getElementById("announcementText").value = "";
+
+    const formData = new FormData();
+    formData.append('message', text);
+
+    fetch('send_announcement.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                document.getElementById("announcementText").value = "";
+                loadAnnouncements();
+            } else {
+                alert(data.message || "Could not send announcement.");
+            }
+        })
+        .catch(() => alert("Could not send announcement. Please try again."));
+}
+
+function loadAnnouncements(){
+    fetch('get_announcements.php')
+        .then(res => res.json())
+        .then(data => {
+            const el = document.getElementById("announcementHistory");
+            if(!data.success || !data.announcements.length){
+                el.innerHTML = '<p style="font-size:12px;color:var(--text-muted);margin-top:10px;">No announcements sent yet.</p>';
+                return;
+            }
+            el.innerHTML = data.announcements.map(a => `
+                <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">
+                    <strong>${a.sender_name}</strong> (${a.sender_role}) — ${new Date(a.created_at).toLocaleString()}<br>
+                    "${a.message}"
+                </p>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById("announcementHistory").innerHTML =
+                '<p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Could not load announcements.</p>';
+        });
+}
+
+/*CONTACT MESSAGES — from the public Contact page, also visible to the Dean*/
+
+function loadContactMessages(){
+    fetch('get_contact_messages.php')
+        .then(res => res.json())
+        .then(data => {
+            const body = document.getElementById("contactMessagesBody");
+            if(!data.success || !data.messages.length){
+                body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No messages yet.</td></tr>';
+                return;
+            }
+            body.innerHTML = data.messages.map(m => `
+                <tr>
+                    <td>${m.full_name}</td>
+                    <td>${m.email}</td>
+                    <td>${m.subject}</td>
+                    <td style="max-width:280px;white-space:normal;word-break:break-word;">${m.message}</td>
+                    <td class="time">${new Date(m.created_at).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById("contactMessagesBody").innerHTML =
+                '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Could not load messages.</td></tr>';
+        });
 }
 
 /*CHART SETUP*/
@@ -489,7 +526,8 @@ new Chart(document.getElementById("uptimeChart"), {
 
 /*INIT */
 
-renderUsers();
+loadUsers(); // populates the Users tab + dashboard stats with real DB counts
 renderLogins();
 renderResources();
 loadCounselorRequests(); // populates statPending + assignments tab even before it's opened
+loadAnnouncements();

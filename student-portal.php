@@ -58,6 +58,11 @@ $studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.prava
             </button>
         </li>
         <li>
+            <button onclick="switchTab('announcements', this)">
+                <i class="fa-solid fa-bullhorn"></i> Announcements
+            </button>
+        </li>
+        <li>
             <button onclick="switchTab('settings', this)">
                 <i class="fa-solid fa-gear"></i> Settings
             </button>
@@ -142,6 +147,15 @@ $studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.prava
                     <p>Talk to a counsellor</p>
                 </div>
             </button>
+        </div>
+
+        <!-- Substance-Free Tracker -->
+        <div class="dashboard-cols" style="margin-top:0;">
+            <div class="dash-card sobriety-card" style="grid-column: 1 / -1;">
+                <h3><i class="fa-solid fa-seedling"></i> Substance-Free Tracker</h3>
+                <p style="font-size:11px;color:#aaa;margin-top:-8px;margin-bottom:10px;">Private — only you can see this.</p>
+                <div id="sobrietyArea"></div>
+            </div>
         </div>
 
         <!-- Two-column lower -->
@@ -333,6 +347,24 @@ $studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.prava
 </div>
 
 
+<!-- ══════════ ANNOUNCEMENTS ══════════ -->
+<div id="announcements" class="portal-page">
+    <div class="journal-body">
+        <div class="page-header">
+            <p class="eyebrow">Announcements</p>
+            <h2>Announcements</h2>
+        </div>
+
+        <div class="journal-card">
+            <h3><i class="fa-solid fa-bullhorn"></i> Latest Updates</h3>
+            <div id="announcementHistory">
+                <p style="font-size:13px;color:#888;">Loading announcements…</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <!-- ══════════ SETTINGS ══════════ -->
 <div id="settings" class="portal-page">
     <div class="settings-body">
@@ -378,7 +410,7 @@ $studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.prava
                 </p>
 
                 <button class="theme-toggle" onclick="toggleTheme()">
-                    <i class="fa-solid fa-circle-half-stroke"></i>
+                    <i class="fa-solid fa-circle-half-stroke theme-toggle-icon"></i>
                     Toggle Dark / Light Mode
                 </button>
 
@@ -425,6 +457,55 @@ function switchTab(id, btn) {
         btn.classList.add('active');
     }
     window.scrollTo(0, 0);
+    if (id === 'announcements') loadAnnouncements();
+}
+
+/* ANNOUNCEMENTS — platform-wide (admin/dean) + personal reminders from the Dean, merged into one feed */
+function loadAnnouncements() {
+    Promise.all([
+        fetch('get_announcements.php').then(res => res.json()).catch(() => ({ success: false })),
+        fetch('get_student_reminders.php').then(res => res.json()).catch(() => ({ success: false }))
+    ]).then(([announcementData, reminderData]) => {
+        const el = document.getElementById('announcementHistory');
+
+        const items = [];
+        if (announcementData.success) {
+            announcementData.announcements.forEach(a => items.push({
+                label: 'Announcement',
+                from: `${a.sender_name} (${a.sender_role})`,
+                message: a.message,
+                date: a.created_at
+            }));
+        }
+        if (reminderData.success) {
+            reminderData.reminders.forEach(r => items.push({
+                label: 'Announcement',
+                from: r.dean_name,
+                message: r.note,
+                date: r.created_at
+            }));
+        }
+
+        if (!items.length) {
+            el.innerHTML = '<p style="font-size:13px;color:#888;">No announcements yet.</p>';
+            return;
+        }
+
+        items.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        el.innerHTML = items.map(i => `
+            <div style="border-bottom:1px solid #eee;padding:10px 0;">
+                <p style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">${i.label}</p>
+                <p style="font-size:12px;color:#8b5cf6;font-weight:600;margin-bottom:4px;">
+                    ${i.from} · ${new Date(i.date).toLocaleString()}
+                </p>
+                <p style="font-size:14px;color:#444;">${i.message}</p>
+            </div>
+        `).join('');
+    }).catch(() => {
+        document.getElementById('announcementHistory').innerHTML =
+            '<p style="font-size:13px;color:#888;">Could not load announcements.</p>';
+    });
 }
 
 function openCheckin() {
@@ -487,12 +568,6 @@ function saveProfile() {
         document.getElementById('usernameDisplay').textContent = name;
         document.getElementById('greetingName').textContent = name;
     }
-}
-
-/*DARK MODE*/
-function toggleTheme() {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
 }
 
 /*CHART*/
@@ -699,18 +774,106 @@ function saveJournal() {
     setTimeout(() => confirm.style.display = 'none', 3000);
 }
 
-/*INIT — no more sessionStorage auth check needed, PHP already gated the page*/
-window.onload = function () {
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
+/*SUBSTANCE-FREE TRACKER — private, stored only in this browser*/
+const SOBRIETY_MESSAGES = [
+    'Every minute clean is a minute you chose yourself. Keep going.',
+    'Progress isn\'t always loud — showing up today counts.',
+    'You are stronger than the urge. One moment at a time.',
+    'Healing isn\'t linear, and that\'s okay. You\'re still moving forward.',
+    'Be proud of how far you\'ve come, not just how far you have to go.',
+    'Your future self is grateful for the choice you\'re making today.'
+];
+
+function sobrietyBreakdown(startIso) {
+    const ms = Date.now() - new Date(startIso).getTime();
+    const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+    const minutes = totalMinutes % 60;
+    const totalHours = Math.floor(totalMinutes / 60);
+    const hours = totalHours % 24;
+    const totalDays = Math.floor(totalHours / 24);
+    const months = Math.floor(totalDays / 30);
+    const daysAfterMonths = totalDays % 30;
+    const weeks = Math.floor(daysAfterMonths / 7);
+    const days = daysAfterMonths % 7;
+    return { months, weeks, days, hours, minutes };
+}
+
+function renderSobrietyCounter(overrideMessage) {
+    const startIso = localStorage.getItem('sobrietyStartDate');
+    const area = document.getElementById('sobrietyArea');
+
+    if (!startIso) {
+        area.innerHTML = `
+            <p style="font-size:12.5px;color:#444;margin-bottom:10px;">Do you drink alcohol or use drugs?</p>
+            <div style="display:flex;gap:8px;">
+                <button class="sobriety-ask-btn" style="background:#10b981;" onclick="startSobrietyTracker('no')">No</button>
+                <button class="sobriety-ask-btn" style="background:#8b5cf6;" onclick="startSobrietyTracker('yes')">Yes</button>
+            </div>
+        `;
+        return;
     }
 
+    const t = sobrietyBreakdown(startIso);
+    const message = overrideMessage || SOBRIETY_MESSAGES[Math.floor(Math.random() * SOBRIETY_MESSAGES.length)];
+
+    area.innerHTML = `
+        <div class="sobriety-stats">
+            <div class="sobriety-unit"><span>${t.months}</span>mo</div>
+            <div class="sobriety-unit"><span>${t.weeks}</span>wk</div>
+            <div class="sobriety-unit"><span>${t.days}</span>d</div>
+            <div class="sobriety-unit"><span>${t.hours}</span>h</div>
+            <div class="sobriety-unit"><span>${t.minutes}</span>m</div>
+        </div>
+        <p class="sobriety-label">substance-free</p>
+        <p class="sobriety-message">${message}</p>
+        <button class="redo-btn" onclick="resetSobrietyTracker()">
+            <i class="fa-solid fa-rotate-left"></i> I used recently — reset
+        </button>
+    `;
+}
+
+function startSobrietyTracker(answer) {
+    localStorage.setItem('sobrietyStartDate', new Date().toISOString());
+    const message = answer === 'yes'
+        ? 'It takes courage to be honest. Today can be day one — you\'ve got this.'
+        : 'Great! Let\'s start tracking your substance-free journey from today.';
+    renderSobrietyCounter(message);
+}
+
+function resetSobrietyTracker() {
+    if (!confirm('Reset your counter back to zero? That\'s okay — every day is a new start.')) return;
+    localStorage.setItem('sobrietyStartDate', new Date().toISOString());
+    renderSobrietyCounter('It\'s okay. Recovery isn\'t a straight line — today is a fresh start.');
+}
+
+function loadSobrietyTracker() {
+    renderSobrietyCounter();
+    setInterval(() => {
+        if (localStorage.getItem('sobrietyStartDate') && document.getElementById('sobrietyArea')) {
+            const startIso = localStorage.getItem('sobrietyStartDate');
+            const t = sobrietyBreakdown(startIso);
+            const unitEls = document.querySelectorAll('.sobriety-unit span');
+            if (unitEls.length === 5) {
+                unitEls[0].textContent = t.months;
+                unitEls[1].textContent = t.weeks;
+                unitEls[2].textContent = t.days;
+                unitEls[3].textContent = t.hours;
+                unitEls[4].textContent = t.minutes;
+            }
+        }
+    }, 60000);
+}
+
+/*INIT — no more sessionStorage auth check needed, PHP already gated the page*/
+window.onload = function () {
     loadAffirmation();
     loadHistoryGraph();
     loadAcademicData();
     loadCounselorRequestStatus();
+    loadSobrietyTracker();
 };
 </script>
+<script src="theme.js"></script>
 
 </body>
 </html>

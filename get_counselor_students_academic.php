@@ -17,8 +17,16 @@ if (!$sem) {
 }
 $semester_id = $sem['id'];
 
-// Get all students (in a real system you'd filter by assigned counselor)
-$students = $pdo->query("SELECT admission_no, full_name FROM students")->fetchAll(PDO::FETCH_ASSOC);
+// Only students this counselor has accepted a request for
+$staff_id = $_SESSION['cId'];
+$studentsStmt = $pdo->prepare("
+    SELECT s.admission_no, s.full_name
+    FROM students s
+    JOIN counselor_requests cr ON cr.admission_no = s.admission_no
+    WHERE cr.assigned_staff_id = ? AND cr.status = 'accepted'
+");
+$studentsStmt->execute([$staff_id]);
+$students = $studentsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $result = [];
 

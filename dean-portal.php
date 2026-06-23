@@ -19,7 +19,7 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
 
 <!-- GOOGLE FONTS -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- FONT AWESOME -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -94,6 +94,18 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
             </li>
         </ul>
 
+        <p class="nav-group-label">Communication</p>
+        <ul>
+            <li onclick="showSection('announcements', this)">
+                <i class="fa-solid fa-bullhorn"></i>
+                Announcements
+            </li>
+            <li onclick="showSection('messages', this)">
+                <i class="fa-solid fa-envelope-open-text"></i>
+                Contact Messages
+            </li>
+        </ul>
+
         <p class="nav-group-label">Account</p>
         <ul>
             <li onclick="showSection('profile', this)">
@@ -127,6 +139,9 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
         </div>
         <div class="topbar-right">
             <span id="liveClock"></span>
+            <div class="notification-bell" onclick="toggleTheme()" title="Toggle dark / light mode">
+                <i class="fa-solid fa-moon theme-toggle-icon"></i>
+            </div>
             <div class="notification-bell" onclick="showSection('dashboard', document.querySelector('.sidebar li'))">
                 <i class="fa-solid fa-bell"></i>
                 <span class="bell-dot"></span>
@@ -430,6 +445,59 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
 
         </section>
 
+        <!-- ANNOUNCEMENTS -->
+        <section id="announcements" class="content">
+
+            <div class="card" style="max-width:600px;">
+                <h3 style="margin-bottom:18px;">Send an Announcement</h3>
+                <p style="color:var(--muted); font-size:13px; margin-bottom:14px;">Visible to every student and counselor on the platform.</p>
+
+                <textarea id="announcementText" rows="4" placeholder="Write your announcement..."></textarea>
+
+                <button class="btn btn-primary" style="margin-top:14px;" onclick="sendAnnouncement()">
+                    <i class="fa-solid fa-bullhorn"></i> Send Announcement
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3>Announcement History</h3>
+                </div>
+                <div id="announcementHistory">
+                    <p style="color:var(--muted); font-size:13px;">Loading announcements…</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- CONTACT MESSAGES -->
+        <section id="messages" class="content">
+
+            <div class="card">
+                <div class="card-head">
+                    <h3>Messages from the public Contact page</h3>
+                </div>
+                <p style="color:var(--muted); font-size:13px; margin-bottom:14px;">Also visible to the Admin.</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Subject</th>
+                                <th>Message</th>
+                                <th>Received</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contactMessagesBody">
+                            <tr><td colspan="5" style="text-align:center;color:var(--muted);">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
         <!-- PROFILE -->
         <section id="profile" class="content">
 
@@ -491,37 +559,32 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
 <!-- SCRIPT -->
 <script>
 
-/*SEED DATA*/
+/*LIVE DATA — populated from the real `referrals` table, see loadReferrals()*/
 
-const students = [
-    { id:'STU-104522', name:'Amara Otieno',    risk:'High',   category:'Academic Pressure',   status:'Open',       counselor:'Dr. Sarah Kim',    referred:'2026-06-10' },
-    { id:'STU-551209', name:'Faith Njeri',      risk:'Medium', category:'Stress & Anxiety',    status:'In Progress',counselor:'Dr. Sarah Kim',    referred:'2026-06-12' },
-    { id:'STU-782301', name:'Kevin Wanjiru',    risk:'High',   category:'Mental Health Crisis', status:'Follow-Up',  counselor:'Mr. James Otieno', referred:'2026-06-05' },
-    { id:'STU-330098', name:'Grace Achieng',    risk:'Low',    category:'Academic Support',     status:'Resolved',   counselor:'Mr. James Otieno', referred:'2026-05-28' },
-    { id:'STU-445210', name:'Daniel Kimani',    risk:'Medium', category:'Stress & Anxiety',     status:'Open',       counselor:'Dr. Sarah Kim',    referred:'2026-06-14' },
-    { id:'STU-660019', name:'Nia Wambua',       risk:'High',   category:'Grief & Loss',         status:'In Progress',counselor:'Dr. Sarah Kim',    referred:'2026-06-15' },
-    { id:'STU-123456', name:'Samuel Mwangi',    risk:'Low',    category:'Relationships',        status:'Resolved',   counselor:'Mr. James Otieno', referred:'2026-06-01' },
-    { id:'STU-789900', name:'Amina Yusuf',      risk:'Medium', category:'Burnout',              status:'Follow-Up',  counselor:'Dr. Sarah Kim',    referred:'2026-06-08' },
-    { id:'STU-334411', name:'Brian Odhiambo',   risk:'High',   category:'Mental Health Crisis', status:'Open',       counselor:'Mr. James Otieno', referred:'2026-06-17' },
-    { id:'STU-991234', name:'Lydia Chebet',     risk:'Low',    category:'Academic Support',     status:'Resolved',   counselor:'Mr. James Otieno', referred:'2026-05-20' }
-];
-
-const alerts = [
-    { dot:'dot-red',    title:'New high-risk student flagged',   body:'Brian Odhiambo (STU-334411) was flagged as High risk today.', time:'Today 08:30' },
-    { dot:'dot-red',    title:'Follow-up overdue',               body:'Kevin Wanjiru has a follow-up check-in that is 2 days overdue.', time:'Yesterday 17:00' },
-    { dot:'dot-amber',  title:'Case escalation needed',          body:'Nia Wambua\'s status was updated — review may be required.', time:'Yesterday 12:15' },
-    { dot:'dot-purple', title:'New resource posted by counselor', body:'Dr. Sarah Kim uploaded a new mindfulness guide.', time:'2 days ago' },
-    { dot:'dot-amber',  title:'Student missed appointment',      body:'Amara Otieno missed her scheduled session on 16 Jun.', time:'3 days ago' }
-];
-
-const reminders = [
-    { student:'Kevin Wanjiru',  note:'Check in after end-of-semester exams', due:'2026-06-20', priority:'urgent', done:false },
-    { student:'Faith Njeri',    note:'Follow up on academic progress report', due:'2026-06-22', priority:'normal', done:false },
-    { student:'Nia Wambua',     note:'Confirm next counselling appointment', due:'2026-06-25', priority:'normal', done:false },
-    { student:'Amara Otieno',   note:'Monthly welfare check-in',             due:'2026-06-28', priority:'urgent', done:false }
-];
+let students = [];
+let alerts = [];
+let reminders = [];
 
 const resources = [];
+
+function loadReferrals(){
+    fetch('get_dean_referrals.php')
+        .then(res => res.json())
+        .then(data => {
+            students = data.success ? data.students : [];
+            renderDashboard();
+            renderStudents();
+            renderCases();
+            populateReminderSelect();
+        })
+        .catch(() => {
+            students = [];
+            renderDashboard();
+            renderStudents();
+            renderCases();
+            populateReminderSelect();
+        });
+}
 
 /*NAVIGATION*/
 
@@ -532,6 +595,8 @@ const pageMeta = {
     reminders: { title:'Follow-up Reminders', sub:'Scheduled check-ins and follow-up tasks' },
     trends:    { title:'Reports & Trends',    sub:'Welfare trends and exported analytics' },
     resources: { title:'Post Resources',      sub:'Publish wellness resources to the resource hub' },
+    announcements: { title:'Announcements',   sub:'Message every student and counselor' },
+    messages:  { title:'Contact Messages',    sub:'Submissions from the public Contact page' },
     profile:   { title:'Profile Settings',    sub:'Manage your Dean account' }
 };
 
@@ -553,12 +618,85 @@ function showSection(id, el){
     document.getElementById('sidebar').classList.remove('open');
 
     if(id === 'trends') setTimeout(renderTrendCharts, 50);
+    if(id === 'announcements') loadAnnouncements();
+    if(id === 'messages') loadContactMessages();
 }
 
 function logout(){
     fetch('logout.php').finally(() => {
         window.location.href = 'dean-login.html';
     });
+}
+
+/* ANNOUNCEMENTS — live, shared across all portals */
+
+function sendAnnouncement(){
+    const text = document.getElementById('announcementText').value.trim();
+    if(!text){ showToast('Write something before sending.', 'fa-triangle-exclamation'); return; }
+
+    const formData = new FormData();
+    formData.append('message', text);
+
+    fetch('send_announcement.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                document.getElementById('announcementText').value = '';
+                loadAnnouncements();
+                showToast('Announcement sent.');
+            } else {
+                showToast(data.message || 'Could not send announcement.', 'fa-triangle-exclamation');
+            }
+        })
+        .catch(() => showToast('Could not send announcement.', 'fa-triangle-exclamation'));
+}
+
+function loadAnnouncements(){
+    fetch('get_announcements.php')
+        .then(res => res.json())
+        .then(data => {
+            const el = document.getElementById('announcementHistory');
+            if(!data.success || !data.announcements.length){
+                el.innerHTML = '<p style="color:var(--muted); font-size:13px;">No announcements sent yet.</p>';
+                return;
+            }
+            el.innerHTML = data.announcements.map(a => `
+                <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+                    <strong style="color:var(--text);">${a.sender_name}</strong> (${a.sender_role}) — ${new Date(a.created_at).toLocaleString()}<br>
+                    "${a.message}"
+                </p>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById('announcementHistory').innerHTML =
+                '<p style="color:var(--muted); font-size:13px;">Could not load announcements.</p>';
+        });
+}
+
+/* CONTACT MESSAGES — from the public Contact page, also visible to the Admin */
+function loadContactMessages(){
+    fetch('get_contact_messages.php')
+        .then(res => res.json())
+        .then(data => {
+            const body = document.getElementById('contactMessagesBody');
+            if(!data.success || !data.messages.length){
+                body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);">No messages yet.</td></tr>';
+                return;
+            }
+            body.innerHTML = data.messages.map(m => `
+                <tr>
+                    <td>${m.full_name}</td>
+                    <td>${m.email}</td>
+                    <td>${m.subject}</td>
+                    <td style="max-width:280px;white-space:normal;word-break:break-word;">${m.message}</td>
+                    <td class="mono" style="font-size:12px;">${new Date(m.created_at).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById('contactMessagesBody').innerHTML =
+                '<tr><td colspan="5" style="text-align:center;color:var(--muted);">Could not load messages.</td></tr>';
+        });
 }
 
 /*UTILITIES*/
@@ -650,48 +788,61 @@ function renderDashboard(){
     }).join('');
 
     // Alerts feed
-    document.getElementById('alertsFeed').innerHTML = alerts.slice(0,4).map(a => `
-        <div class="alert-item">
-            <div class="alert-dot ${a.dot}"></div>
-            <div class="body">
-                <h4>${a.title}</h4>
-                <p>${a.body}</p>
-                <p class="meta">${a.time}</p>
+    document.getElementById('alertsFeed').innerHTML = alerts.length
+        ? alerts.slice(0,4).map(a => `
+            <div class="alert-item">
+                <div class="alert-dot ${a.dot}"></div>
+                <div class="body">
+                    <h4>${a.title}</h4>
+                    <p>${a.body}</p>
+                    <p class="meta">${a.time}</p>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('')
+        : '<p style="color:var(--muted); font-size:13px;">No alerts right now.</p>';
 
     // Recent referrals (last 5)
-    document.getElementById('recentReferralsBody').innerHTML = students.slice(0,5).map(s => `
-        <tr>
-            <td>${s.name}</td>
-            <td><span class="risk ${riskClass(s.risk)}">${s.risk}</span></td>
-            <td><span class="status ${statusClass(s.status)}">${s.status}</span></td>
-            <td class="mono" style="font-size:12px;">${s.referred}</td>
-        </tr>
-    `).join('');
+    document.getElementById('recentReferralsBody').innerHTML = students.length
+        ? students.slice(0,5).map(s => `
+            <tr>
+                <td>${s.name}</td>
+                <td><span class="risk ${riskClass(s.risk)}">${s.risk}</span></td>
+                <td><span class="status ${statusClass(s.status)}">${s.status}</span></td>
+                <td class="mono" style="font-size:12px;">${s.referred}</td>
+            </tr>
+        `).join('')
+        : '<tr class="empty-row"><td colspan="4">No referrals yet.</td></tr>';
 
     // Upcoming follow-ups in dashboard
-    document.getElementById('dashReminders').innerHTML = reminders.slice(0,3).map(r => `
-        <div class="reminder-item ${r.priority === 'urgent' ? 'urgent' : ''}">
-            <div>
-                <h4>${r.student}</h4>
-                <p>${r.note}</p>
+    document.getElementById('dashReminders').innerHTML = reminders.length
+        ? reminders.slice(0,3).map(r => `
+            <div class="reminder-item ${r.priority === 'urgent' ? 'urgent' : ''}">
+                <div>
+                    <h4>${r.student}</h4>
+                    <p>${r.note}</p>
+                </div>
+                <div class="due">${r.due}</div>
             </div>
-            <div class="due">${r.due}</div>
-        </div>
-    `).join('');
+        `).join('')
+        : '<p style="color:var(--muted); font-size:13px;">No reminders yet.</p>';
 
-    // Weekly chart
+    // Weekly chart — last 5 weeks of real referrals, bucketed by referred_at
     if(weeklyChart) weeklyChart.destroy();
     const wCtx = document.getElementById('weeklyChart');
+    const weekBuckets = [0,0,0,0,0];
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    const weekStart = new Date(); weekStart.setHours(0,0,0,0);
+    weekStart.setTime(weekStart.getTime() - 4 * oneWeek);
+    students.forEach(s => {
+        const idx = Math.floor((new Date(s.referred) - weekStart) / oneWeek);
+        if(idx >= 0 && idx < 5) weekBuckets[idx]++;
+    });
     weeklyChart = new Chart(wCtx, {
         type:'bar',
         data:{
-            labels:['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5'],
+            labels:['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5 (this week)'],
             datasets:[
-                { label:'New Referrals', data:[3,5,4,7,6], backgroundColor:'#8b5cf6', borderRadius:6 },
-                { label:'Resolved',      data:[1,2,3,4,3], backgroundColor:'#c4b5fd', borderRadius:6 }
+                { label:'New Referrals', data:weekBuckets, backgroundColor:'#8b5cf6', borderRadius:6 }
             ]
         },
         options:{
@@ -782,60 +933,97 @@ function renderCases(){
 
     const body = document.getElementById('casesTableBody');
 
-    body.innerHTML = filtered.map((s, i) => `
+    if(!filtered.length){
+        body.innerHTML = `<tr class="empty-row"><td colspan="7">No cases match that filter.</td></tr>`;
+        return;
+    }
+
+    body.innerHTML = filtered.map(s => `
         <tr>
-            <td class="mono" style="font-size:12px;">CASE-${String(i+1).padStart(3,'0')}</td>
+            <td class="mono" style="font-size:12px;">CASE-${String(s.referral_id).padStart(3,'0')}</td>
             <td style="font-weight:600;">${s.name}</td>
             <td><span class="risk ${riskClass(s.risk)}">${s.risk}</span></td>
             <td>${s.category}</td>
             <td><span class="status ${statusClass(s.status)}">${s.status}</span></td>
             <td class="mono" style="font-size:12px;">${s.referred}</td>
             <td>
-                <select style="width:auto; padding:6px 10px; font-size:12.5px; margin-bottom:0;" onchange="updateCaseStatus('${s.id}', this.value)">
+                <select style="width:auto; padding:6px 10px; font-size:12.5px; margin-bottom:0;" onchange="updateCaseStatus(${s.referral_id}, this.value)">
                     <option ${s.status==='Open'?'selected':''}>Open</option>
                     <option ${s.status==='In Progress'?'selected':''}>In Progress</option>
                     <option ${s.status==='Follow-Up'?'selected':''}>Follow-Up</option>
                     <option ${s.status==='Resolved'?'selected':''}>Resolved</option>
-                    <option ${s.status==='Referred'?'selected':''}>Referred</option>
                 </select>
             </td>
         </tr>
     `).join('');
 }
 
-function updateCaseStatus(id, newStatus){
-    const s = students.find(x => x.id === id);
-    s.status = newStatus;
-    renderCases();
-    renderDashboard();
-    showToast(`${s.name}'s case marked as ${newStatus}`, 'fa-rotate');
+function updateCaseStatus(referralId, newStatus){
+    const formData = new FormData();
+    formData.append('referral_id', referralId);
+    formData.append('status', newStatus);
+
+    fetch('update_referral_status.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                const s = students.find(x => x.referral_id === referralId);
+                if(s) s.status = newStatus;
+                renderCases();
+                renderDashboard();
+                renderStudents();
+                showToast(data.message || 'Case status updated.', 'fa-rotate');
+            } else {
+                showToast(data.message || 'Could not update status.', 'fa-triangle-exclamation');
+                renderCases();
+            }
+        })
+        .catch(() => showToast('Could not update status.', 'fa-triangle-exclamation'));
 }
 
 /*FOLLOW-UP REMINDERS*/
 
 function populateReminderSelect(){
     const sel = document.getElementById('reminderStudent');
-    sel.innerHTML = students.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+    // Dedupe by student id — the same student can have more than one referral record
+    const seen = new Set();
+    const unique = students.filter(s => seen.has(s.id) ? false : seen.add(s.id));
+    sel.innerHTML = unique.map(s => `<option value="${s.id}">${s.name} (${s.id})</option>`).join('');
 }
 
 function addReminder(){
-    const student  = document.getElementById('reminderStudent').value;
+    const select   = document.getElementById('reminderStudent');
+    const studentId = select.value;
+    const studentName = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text.replace(/\s*\(.*\)$/, '') : '';
     const note     = document.getElementById('reminderNote').value.trim();
     const due      = document.getElementById('reminderDate').value;
     const priority = document.getElementById('reminderPriority').value;
 
-    if(!note || !due){
-        showToast('Add a note and a due date', 'fa-circle-exclamation');
+    if(!studentId || !note || !due){
+        showToast('Select a student, add a note, and a due date', 'fa-circle-exclamation');
         return;
     }
 
-    reminders.unshift({ student, note, due, priority, done:false });
-    document.getElementById('reminderNote').value = '';
-    document.getElementById('reminderDate').value = '';
+    const formData = new FormData();
+    formData.append('student_id', studentId);
+    formData.append('note', note);
 
-    renderAllReminders();
-    renderDashboard();
-    showToast('Reminder added', 'fa-bell');
+    fetch('send_reminder.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(!data.success){
+                showToast(data.message || 'Could not send reminder.', 'fa-triangle-exclamation');
+                return;
+            }
+            reminders.unshift({ student: studentName, note, due, priority, done:false });
+            document.getElementById('reminderNote').value = '';
+            document.getElementById('reminderDate').value = '';
+
+            renderAllReminders();
+            renderDashboard();
+            showToast('Reminder sent to ' + studentName, 'fa-bell');
+        })
+        .catch(() => showToast('Could not send reminder.', 'fa-triangle-exclamation'));
 }
 
 function renderAllReminders(){
@@ -1069,16 +1257,14 @@ function init(){
     tickClock();
     setInterval(tickClock, 30000);
 
-    renderDashboard();
-    renderStudents();
-    renderCases();
+    loadReferrals(); // fetches real students/alerts data, then calls renderDashboard/renderStudents/renderCases/populateReminderSelect
     renderAllReminders();
-    populateReminderSelect();
     renderResources();
 }
 
 init();
 
 </script>
+<script src="theme.js"></script>
 </body>
 </html>

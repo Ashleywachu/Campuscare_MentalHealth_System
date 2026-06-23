@@ -49,6 +49,15 @@
     --shadow-md:0 8px 32px rgba(109,40,217,0.10);
 }
 
+/* DARK MODE — overriding the tokens above re-themes the whole dean portal */
+body.dark{
+    --canvas:#1a1025;
+    --surface:#231535;
+    --line:#3b2568;
+    --ink:#e3dcf0;
+    --muted:#a596c2;
+}
+
 @media (prefers-reduced-motion: reduce){
     *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
 }
@@ -60,14 +69,14 @@
 }
 
 body{
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
     background:var(--canvas);
     color:var(--ink);
     min-height:100vh;
 }
 
 h1,h2,h3,h4{
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
 }
 
 a{ color:inherit; text-decoration:none; }
@@ -129,7 +138,7 @@ button{ font-family:inherit; }
     font-size:11px;
     color:#a78bfa;
     font-weight:400;
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
 }
 
 /* PROFILE CHIP inside sidebar */
@@ -151,7 +160,7 @@ button{ font-family:inherit; }
     display:flex;
     align-items:center;
     justify-content:center;
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
     font-size:13px;
     font-weight:700;
     color:white;
@@ -168,7 +177,7 @@ button{ font-family:inherit; }
 .dean-info span{
     font-size:11px;
     color:#c4b5fd;
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
 }
 
 /* NAV */
@@ -228,7 +237,7 @@ button{ font-family:inherit; }
     font-weight:700;
     padding:2px 7px;
     border-radius:30px;
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
 }
 
 /* LOGOUT */
@@ -301,7 +310,7 @@ button{ font-family:inherit; }
 #liveClock{
     font-size:12.5px;
     color:var(--muted);
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
 }
 
 .notification-bell{
@@ -468,7 +477,7 @@ button{ font-family:inherit; }
 .stat-icon.bg-blue{ background:#3b82f6; }
 
 .stat-card .num{
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
     font-size:30px;
     font-weight:600;
     color:var(--ink);
@@ -596,7 +605,7 @@ canvas{ max-height:250px; }
     align-items:center;
     gap:7px;
     transition:0.15s;
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
 }
 
 .btn-primary{
@@ -756,7 +765,7 @@ td.actions-cell{ display:flex; gap:6px; }
 
 .alert-item .body h4{ font-size:13.5px; margin-bottom:3px; }
 .alert-item .body p{ font-size:12.5px; color:var(--muted); }
-.alert-item .body .meta{ font-size:11.5px; color:#a78bfa; margin-top:4px; font-family:'Inter', sans-serif; }
+.alert-item .body .meta{ font-size:11.5px; color:#a78bfa; margin-top:4px; font-family:'Poppins', sans-serif; }
 
 /*REMINDER CARDS*/
 
@@ -781,7 +790,7 @@ td.actions-cell{ display:flex; gap:6px; }
 
 .reminder-item .due{
     font-size:11.5px;
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
     color:var(--purple-600);
     white-space:nowrap;
 }
@@ -805,7 +814,7 @@ input[type="file"], select, textarea{
     border-radius:9px;
     border:1px solid var(--line);
     font-size:13.5px;
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
     background:var(--canvas);
     margin-bottom:14px;
     color:var(--ink);
@@ -854,7 +863,7 @@ input:focus, select:focus, textarea:focus{
 
 .resource-item h4{ font-size:14px; margin-bottom:3px; }
 .resource-item p{ font-size:12.5px; color:var(--muted); }
-.resource-item .meta{ font-size:11px; color:#c4b5fd; margin-top:4px; font-family:'Inter', sans-serif; }
+.resource-item .meta{ font-size:11px; color:#c4b5fd; margin-top:4px; font-family:'Poppins', sans-serif; }
 
 /*REPORT OUTPUT*/
 
@@ -873,7 +882,7 @@ input:focus, select:focus, textarea:focus{
 }
 
 .report-stat .num{
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
     font-size:24px;
     font-weight:700;
     color:var(--purple-800);
@@ -901,7 +910,8 @@ input:focus, select:focus, textarea:focus{
 .modal-overlay.open{ display:flex; }
 
 .modal{
-    background:white;
+    background:var(--surface);
+    color:var(--ink);
     border-radius:16px;
     padding:26px 28px;
     width:100%;
@@ -988,7 +998,7 @@ input:focus, select:focus, textarea:focus{
 /*MONO UTILITY*/
 
 .mono{
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
 }
 
 /*RESPONSIVE*/

@@ -17,7 +17,7 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Portal | CampusCare</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -49,8 +49,13 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
         <li data-target="reports" tabindex="0"><i class="fa-solid fa-chart-pie"></i><span class="label">Reports</span></li>
         <li data-target="backup" tabindex="0"><i class="fa-solid fa-database"></i><span class="label">Backup</span></li>
         <li data-target="announcements" tabindex="0"><i class="fa-solid fa-bullhorn"></i><span class="label">Announce</span></li>
+        <li data-target="messages" tabindex="0"><i class="fa-solid fa-envelope-open-text"></i><span class="label">Messages</span></li>
         <li data-target="profile" tabindex="0"><i class="fa-solid fa-user-gear"></i><span class="label">Profile</span></li>
     </ul>
+
+    <div class="nav-logout" onclick="toggleTheme()" tabindex="0" title="Toggle dark / light mode">
+        <i class="fa-solid fa-moon theme-toggle-icon"></i><span class="label">Theme</span>
+    </div>
 
     <div class="nav-logout" onclick="logout()" tabindex="0">
         <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="label">Logout</span>
@@ -134,11 +139,8 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
     <!--USER MANAGEMENT-->
     <section id="users" class="content">
 
-        <div class="btn-row">
-            <button class="btn primary" onclick="addUser()"><i class="fa-solid fa-plus"></i>&nbsp; Add user</button>
-        </div>
-
         <div class="panel">
+            <p class="panel-sub" style="margin-bottom:14px;">Every student, counselor, dean, and admin account currently in the database.</p>
             <div class="table-wrap">
                 <table>
                     <thead>
@@ -146,8 +148,7 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
                             <th>User ID</th>
                             <th>Name</th>
                             <th>Role</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th>Email</th>
                         </tr>
                     </thead>
                     <tbody id="userTableBody"></tbody>
@@ -354,6 +355,32 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
 
     </section>
 
+    <!--CONTACT MESSAGES-->
+    <section id="messages" class="content">
+
+        <div class="panel">
+            <h3>Messages from the public Contact page</h3>
+            <p class="panel-sub">Also visible to the Dean of Students.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Message</th>
+                            <th>Received</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactMessagesBody">
+                        <tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
     <!--PROFILE-->
     <section id="profile" class="content">
 
@@ -380,6 +407,7 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
 
 <!-- All behavior now lives in its own file -->
 <script src="script.js"></script>
+<script src="theme.js"></script>
 
 </body>
 </html>

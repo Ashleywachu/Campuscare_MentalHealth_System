@@ -494,3 +494,18 @@
     .video-grid { grid-template-columns: 1fr; }
     .crisis-strip { flex-direction: column; text-align: center; }
 }
+
+/* ── DARK MODE ───────────────────────────────────────────────── */
+body.dark .resources-hero{ background:linear-gradient(160deg, #231535 0%, #1a1025 60%); border-bottom-color:#3b2568; }
+body.dark .resources-hero .eyebrow{ background:#3b2568; color:#c4b5fd; }
+
+body.dark .article-card,
+body.dark .video-card,
+body.dark .book-card,
+body.dark .faith-card,
+body.dark .prompt-item,
+body.dark .affirmation-banner{
+    background:#231535;
+    border-color:#3b2568;
+    color:#cfc6e3;
+}

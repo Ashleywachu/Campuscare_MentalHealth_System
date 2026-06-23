@@ -1,7 +1,7 @@
 /* ── PURPLE BRAND TOKENS (matches CampusCare login pages) ── */
 :root {
     --purple-950:#2e1065;
-    --purple-900:#3b0764;
+    --purple-900:#3d1d77;
     --purple-800:#4c1d95;
     --purple-700:#5b21b6;
     --purple-600:#6d28d9;
@@ -26,10 +26,10 @@ body {
 /* ── TOP NAV ────────────────────────────────────────────── */
 .c-nav {
     background: #fff;
-    padding: 0 6%;
+    padding: 0 24px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 16px;
     height: 66px;
     box-shadow: 0 1px 0 rgba(0,0,0,0.07);
     position: sticky;
@@ -42,6 +42,7 @@ body {
     align-items: center;
     gap: 10px;
     text-decoration: none;
+    flex-shrink: 0;
 }
 
 .c-nav-logo i { font-size: 22px; color: var(--purple-600); }
@@ -50,25 +51,34 @@ body {
 
 .c-nav-tabs {
     display: flex;
-    gap: 4px;
+    align-items: center;
+    gap: 2px;
     list-style: none;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
 }
+
+.c-nav-tabs::-webkit-scrollbar { display: none; }
+
+.c-nav-tabs li { flex-shrink: 0; }
 
 .c-nav-tabs li button {
     background: none;
     border: none;
     font-family: 'Poppins', sans-serif;
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 500;
     color: #666;
-    padding: 8px 15px;
+    padding: 8px 12px;
     border-radius: 30px;
     cursor: pointer;
+    white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 7px;
     transition: background 0.18s, color 0.18s;
-    white-space: nowrap;
 }
 
 .c-nav-tabs li button:hover  { background: var(--purple-50); color: var(--purple-600); }
@@ -89,6 +99,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0;
 }
 
 .home-link {
@@ -870,8 +881,58 @@ input[type="file"] { display: none; }
 }
 
 @media (max-width: 680px) {
-    .c-nav-tabs { display: none; }
+    .c-nav-logo p { display: none; }
     .c-hero-text h1 { font-size: 20px; }
     .c-stat-pills { gap: 8px; }
     .stat-pill { min-width: 80px; padding: 10px 14px; }
+}
+
+/* ── DARK MODE ──────────────────────────────────────────── */
+body.dark { background: #1a1025; color: #cfc6e3; }
+
+body.dark .c-nav { background: #231535; box-shadow: 0 1px 0 rgba(255,255,255,0.05); }
+body.dark .c-nav-logo h2 { color: #c4b5fd; }
+body.dark .c-nav-logo p { color: #9a8fc0; }
+body.dark .c-nav-tabs li button { color: #bbb; }
+body.dark .c-nav-tabs li button:hover { background: #2d1f50; color: #c4b5fd; }
+body.dark .home-link { border-color: #4c2d8a; color: #c4b5fd; }
+body.dark .home-link:hover { background: #2d1f50; }
+body.dark .logout-btn { border-color: #4c2d8a; color: #c4b5fd; }
+body.dark .logout-btn:hover { border-color: #ef4444; color: #ef4444; background: #2d1f50; }
+
+body.dark .c-page-header h2 { color: #c4b5fd; }
+body.dark .c-page-header .eyebrow { color: #9a8fc0; }
+
+body.dark .c-card,
+body.dark .stu-card,
+body.dark .request-card,
+body.dark .trend-card,
+body.dark .note-entry,
+body.dark .stat-pill {
+    background: #231535;
+    color: #cfc6e3;
+    box-shadow: none;
+    border-color: #3b2568;
+}
+
+body.dark .c-card h3 { color: #c4b5fd; }
+body.dark .req-name,
+body.dark .stu-name,
+body.dark .tc-name { color: #e0d5f7; }
+body.dark .note-entry p { color: #cfc6e3; }
+
+body.dark .stu-card.risk-critical { background: #3a1f24; }
+body.dark .stu-card.risk-support  { background: #3a311c; }
+body.dark .stu-card.risk-stable   { background: #1c3a2a; }
+
+body.dark .c-table th { background: #2d1f50; color: #c4b5fd; border-color: #3b2568; }
+body.dark .c-table td { color: #cfc6e3; border-color: #2d1f50; }
+body.dark .c-table tr:hover td { background: #231535; }
+
+body.dark .c-input,
+body.dark .c-select,
+body.dark .c-textarea {
+    background: #1a1025;
+    border-color: #3b2568;
+    color: #e0d5f7;
 }

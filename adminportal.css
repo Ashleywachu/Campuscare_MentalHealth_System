@@ -14,9 +14,9 @@
     --text:#2c1f3d;            /* body text */
     --text-muted:#7a6d94;      /* secondary text */
 
-    --accent:#7c3aed;          /* primary purple */
+    --accent:#6d28d9;          /* primary purple — matches purple-600 used in every other portal */
     --accent-dark:#5b21b6;     /* hover/pressed purple */
-    --accent-soft:#f1e8fd;     /* tint for focus rings, soft backgrounds */
+    --accent-soft:#ede9fe;     /* tint for focus rings, soft backgrounds — matches purple-100 elsewhere */
 
     --good:#16a34a;
     --good-soft:#dcfce7;
@@ -29,6 +29,22 @@
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 
+/* DARK MODE — overriding the tokens above re-themes the whole admin portal */
+body.dark{
+    --ink:#e3dcf0;
+    --ink-soft:#1f1430;
+    --ink-softer:#2a1d40;
+
+    --bg:#15101f;
+    --surface:#1f1730;
+    --line:#34284a;
+
+    --text:#e3dcf0;
+    --text-muted:#a596c2;
+
+    --accent-soft:#2d2350;
+}
+
 /* 2. RESET */
 *{
     margin:0;
@@ -37,7 +53,7 @@
 }
 
 body{
-    font-family:'Inter',sans-serif;
+    font-family:'Poppins', sans-serif;
     background:var(--bg);
     color:var(--text);
 }

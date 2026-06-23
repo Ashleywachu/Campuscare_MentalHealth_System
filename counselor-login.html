@@ -6,7 +6,7 @@
 <title>Counselor Login | CampusCare</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
@@ -30,7 +30,7 @@
 *{ margin:0; padding:0; box-sizing:border-box; }
 
 body{
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
     min-height:100vh;
     display:flex;
     align-items:center;
@@ -59,80 +59,34 @@ body{
 .page{
     position:relative;
     z-index:2;
-    display:grid;
-    grid-template-columns:1fr 1fr;
+    display:flex;
     min-height:100vh;
     width:100%;
-    max-width:1100px;
-    margin:0 auto;
+    justify-content:center;
+    align-items:center;
     padding:40px;
-    gap:60px;
-    align-items:center;
 }
 
-@media (max-width:768px){
-    .page{ grid-template-columns:1fr; padding:30px 20px; gap:32px; }
-    .left-panel{ display:none; }
-}
-
-.left-panel{ color:white; }
-
-.brand{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    margin-bottom:52px;
-}
-
-.brand i{ font-size:28px; color:#c4b5fd; }
-
-.brand-text h2{
-    font-family:'Space Grotesk', sans-serif;
-    font-size:22px;
-    letter-spacing:0.2px;
-}
-
-.brand-text span{ font-size:13px; color:#c4b5fd; }
-
-.left-panel h1{
-    font-family:'Space Grotesk', sans-serif;
-    font-size:42px;
-    line-height:1.2;
-    margin-bottom:18px;
-    color:white;
-}
-
-.left-panel h1 em{ font-style:normal; color:#c4b5fd; }
-
-.left-panel p{
-    font-size:15px;
-    line-height:1.8;
-    color:rgba(255,255,255,0.75);
-    margin-bottom:40px;
-    max-width:380px;
-}
-
-.features{ display:flex; flex-direction:column; gap:14px; }
-
-.feature{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    color:rgba(255,255,255,0.85);
-    font-size:14px;
-}
-
-.feature-icon{
-    width:36px;
-    height:36px;
-    border-radius:10px;
-    background:rgba(139,92,246,0.3);
+.brand-mini{
     display:flex;
     align-items:center;
     justify-content:center;
-    flex-shrink:0;
-    color:#c4b5fd;
-    font-size:14px;
+    gap:9px;
+    margin-bottom:22px;
+    color:var(--purple-700);
+    font-weight:600;
+    font-size:15px;
+}
+
+.brand-mini i{ color:var(--purple-500); font-size:18px; }
+
+.portal-label{
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    color:var(--purple-500);
+    margin-bottom:4px;
 }
 
 .login-card{
@@ -161,25 +115,9 @@ body{
 }
 
 .card-header h2{
-    font-family:'Space Grotesk', sans-serif;
-    font-size:22px;
+    font-family:'Poppins', sans-serif;
+    font-size:26px;
     color:var(--purple-950);
-    margin-bottom:6px;
-}
-
-.card-header p{ font-size:13.5px; color:#6b7280; }
-
-.role-badge{
-    display:inline-flex;
-    align-items:center;
-    gap:7px;
-    background:var(--purple-100);
-    color:var(--purple-700);
-    font-size:12px;
-    font-weight:600;
-    padding:5px 14px;
-    border-radius:30px;
-    margin-top:8px;
 }
 
 .form-group{ margin-bottom:18px; }
@@ -209,7 +147,7 @@ body{
     border:1.5px solid #e5e7eb;
     border-radius:11px;
     font-size:14px;
-    font-family:'Inter', sans-serif;
+    font-family:'Poppins', sans-serif;
     background:#f9fafb;
     color:#1f2937;
     transition:0.2s;
@@ -262,7 +200,7 @@ body{
     border-radius:12px;
     font-size:15px;
     font-weight:600;
-    font-family:'Space Grotesk', sans-serif;
+    font-family:'Poppins', sans-serif;
     cursor:pointer;
     display:flex;
     align-items:center;
@@ -303,63 +241,6 @@ body{
 }
 
 .back-link:hover{ color:var(--purple-600); }
-
-.divider{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    margin:20px 0;
-    color:#d1d5db;
-    font-size:12px;
-}
-
-.divider::before, .divider::after{
-    content:'';
-    flex:1;
-    height:1px;
-    background:#e5e7eb;
-}
-
-.demo-box{
-    background:var(--purple-50);
-    border:1px dashed var(--purple-300);
-    border-radius:11px;
-    padding:13px 16px;
-    font-size:12.5px;
-    color:var(--purple-800);
-}
-
-.demo-box strong{
-    display:block;
-    font-size:11.5px;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    color:var(--purple-500);
-    margin-bottom:7px;
-}
-
-.demo-box .cred{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:4px;
-}
-
-.demo-box .val{
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-    cursor:pointer;
-    color:var(--purple-700);
-    font-weight:600;
-}
-
-.demo-box .val:hover{ text-decoration:underline; }
-
-.copy-hint{
-    font-size:11px;
-    color:var(--purple-400);
-    margin-top:6px;
-    text-align:right;
-}
 </style>
 </head>
 
@@ -372,59 +253,17 @@ body{
 
 <div class="page">
 
-    <div class="left-panel">
-        <div class="brand">
-            <i class="fa-solid fa-heart"></i>
-            <div class="brand-text">
-                <h2>CampusCare</h2>
-                <span>Mental Health Support</span>
-            </div>
-        </div>
-
-        <h1>Counselor<br><em>Support</em><br>Portal</h1>
-
-        <p>
-            A confidential space to manage student
-            check-ins, review referred cases, and
-            coordinate care — all in one secure
-            workspace.
-        </p>
-
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon"><i class="fa-solid fa-calendar-check"></i></div>
-                Session scheduling and check-in tracking
-            </div>
-            <div class="feature">
-                <div class="feature-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                Risk-level flagging — High, Medium, Low
-            </div>
-            <div class="feature">
-                <div class="feature-icon"><i class="fa-solid fa-folder-open"></i></div>
-                Case tracking and status updates
-            </div>
-            <div class="feature">
-                <div class="feature-icon"><i class="fa-solid fa-comments"></i></div>
-                Secure notes shared only with care team
-            </div>
-            <div class="feature">
-                <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                Privacy-protected student records
-            </div>
-        </div>
-    </div>
-
     <div class="login-card">
+        <div class="brand-mini">
+            <i class="fa-solid fa-heart"></i> CampusCare
+        </div>
+
         <div class="card-header">
             <div class="avatar-ring">
                 <i class="fa-solid fa-user-nurse"></i>
             </div>
-            <h2>Welcome Back</h2>
-            <p>Sign in to your counselor workspace</p>
-            <div class="role-badge">
-                <i class="fa-solid fa-shield-halved"></i>
-                Counselor Access
-            </div>
+            <p class="portal-label">Counselor Portal Login</p>
+            <h2>Welcome</h2>
         </div>
 
         <div class="error-msg" id="errorMsg">
@@ -459,21 +298,6 @@ body{
         <a href="Home.html" class="back-link">
             <i class="fa-solid fa-arrow-left"></i> Back to CampusCare Home
         </a>
-
-        <div class="divider">demo credentials</div>
-
-        <div class="demo-box">
-            <strong>Development / Demo Access</strong>
-            <div class="cred">
-                <span>Staff ID</span>
-                <span class="val" onclick="fillDemo('username', 'CSL-001')">CSL-001</span>
-            </div>
-            <div class="cred">
-                <span>Password</span>
-                <span class="val" onclick="fillDemo('password', 'counsel123')">counsel123</span>
-            </div>
-            <p class="copy-hint"><i class="fa-solid fa-hand-pointer"></i> Click a value to fill it in</p>
-        </div>
     </div>
 
 </div>
@@ -547,11 +371,6 @@ function togglePassword() {
     const visible = input.type === 'text';
     input.type    = visible ? 'password' : 'text';
     icon.className = visible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
-}
-
-function fillDemo(field, value) {
-    document.getElementById(field).value = value;
-    document.getElementById(field).focus();
 }
 
 document.addEventListener('keydown', (e) => {

@@ -18,7 +18,7 @@
 
     <!-- BACKGROUND VIDEO -->
     <video class="bg-video" autoplay muted loop playsinline>
-        <source src="/image/Campus ilustration.mp4" type="video/mp4">
+        <source src="image/Campus ilustration.mp4" type="video/mp4">
     </video>
     <div class="bg-overlay"></div>
 
@@ -40,10 +40,14 @@
             <li><a href="Contact.html">Contact</a></li>
         </ul>
 
-        <button class="help-btn">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark / light mode">
+            <i class="fa-solid fa-moon theme-toggle-icon"></i>
+        </button>
+
+        <a class="help-btn" href="Contact.html">
             <i class="fa-solid fa-phone"></i>
             Get Help
-        </button>
+        </a>
     </nav>
 
     <!-- HERO SECTION -->
@@ -154,10 +158,10 @@
             </p>
         </div>
 
-        <button>
+        <a class="emergency-btn" href="Contact.html">
             <i class="fa-solid fa-phone"></i>
             Emergency Contact
-        </button>
+        </a>
 
     </section>
 
@@ -165,5 +169,6 @@
         <p>&copy; 2026 Campus Mental Health Early Support System. All rights reserved.</p>
     </footer>
 
+<script src="theme.js"></script>
 </body>
 </html>

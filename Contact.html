@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us</title>
+    <title>Contact Us | CampusCare</title>
      <!-- GOOGLE FONT -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -11,6 +11,7 @@
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="contact.css">
 </head>
 <body>
 
@@ -32,48 +33,84 @@
             <li><a href="Contact.html" class="active">Contact</a></li>
         </ul>
 
-        <button class="help-btn">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark / light mode">
+            <i class="fa-solid fa-moon theme-toggle-icon"></i>
+        </button>
+
+        <a class="help-btn" href="Contact.html">
             <i class="fa-solid fa-phone"></i>
             Get Help
-        </button>
+        </a>
     </nav>
 
+    <!-- HERO -->
+    <section class="contact-hero">
+        <span class="contact-eyebrow"><i class="fa-solid fa-paper-plane"></i> We're listening</span>
+        <h1>Let's Talk — <span>We're Here for You</span></h1>
+        <p>Whether it's a question, feedback, or you just need someone to reach out to — send us a message and a real person on our team will respond.</p>
+        <div class="reply-pill"><i class="fa-solid fa-clock"></i> Typical reply time: within 24 hours</div>
+    </section>
+
     <section class="contact-section">
-        <h2>Get in Touch</h2>
-        <p>If you have any questions, concerns, or need support, feel free to reach out.</p>
 
         <div class="contact-container">
 
-            <form action="#" method="post" class="contact-form">
+            <form class="contact-form" id="contactForm">
+                <div class="form-status" id="formStatus"></div>
+
                 <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" required>
+                <input type="text" id="name" name="name" placeholder="Jane Doe" required>
 
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" placeholder="jane@university.edu" required>
 
                 <label for="subject">Subject</label>
-                <input type="text" id="subject" name="subject" required>
+                <input type="text" id="subject" name="subject" placeholder="What's this about?" required>
 
                 <label for="message">Message</label>
-                <textarea id="message" name="message" rows="6" required></textarea>
+                <textarea id="message" name="message" rows="6" placeholder="Tell us what's on your mind..." required></textarea>
 
-                <button type="submit">Send Message</button>
+                <button type="submit" id="contactSubmitBtn">
+                    <span class="btn-label"><i class="fa-solid fa-paper-plane"></i> Send Message</span>
+                    <span class="btn-spinner"></span>
+                </button>
             </form>
 
             <div class="contact-info">
-                <h3>Contact Information</h3>
-                <p>Email: support@mentalhealthcampus.com</p>
-                <p>Phone: +254 700 000 000</p>
-                <p>Location: University Campus Support Center</p>
+                <h3>Get in touch directly</h3>
 
-                <h3>Office Hours </h3>
-                <p>Monday - Friday: 8:00 AM - 6:00 PM</p>
-                <p>Saturday: 9:00 AM - 2:00 PM</p>
-                <p>Sunday: 12:00 PM - 4:00 PM</p>
+                <div class="contact-info-row">
+                    <div class="icon-circle"><i class="fa-solid fa-envelope"></i></div>
+                    <div>
+                        <span class="info-label">Email</span>
+                        <span class="info-value">support@mentalhealthcampus.com</span>
+                    </div>
+                </div>
 
-                 <h3>Working Hours </h3>
-                <p>The System is available 24/7 for online support.</p>
+                <div class="contact-info-row">
+                    <div class="icon-circle"><i class="fa-solid fa-phone"></i></div>
+                    <div>
+                        <span class="info-label">Phone</span>
+                        <span class="info-value">+254 700 000 000</span>
+                    </div>
+                </div>
 
+                <div class="contact-info-row">
+                    <div class="icon-circle"><i class="fa-solid fa-location-dot"></i></div>
+                    <div>
+                        <span class="info-label">Location</span>
+                        <span class="info-value">University Campus Support Center</span>
+                    </div>
+                </div>
+
+                <div class="hours-divider"></div>
+
+                <h3>Office hours</h3>
+                <div class="hours-row"><span>Monday – Friday</span><span>8:00 AM – 6:00 PM</span></div>
+                <div class="hours-row"><span>Saturday</span><span>9:00 AM – 2:00 PM</span></div>
+                <div class="hours-row"><span>Sunday</span><span>12:00 PM – 4:00 PM</span></div>
+
+                <div class="online-badge"><i class="fa-solid fa-circle-check"></i> Online support available 24/7</div>
             </div>
 
         </div>
@@ -83,5 +120,36 @@
         <p>&copy; 2026 Campus Mental Health Early Support System. All rights reserved.</p>
     </footer>
 
+<script src="theme.js"></script>
+<script>
+document.getElementById('contactForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('contactSubmitBtn');
+    const statusEl = document.getElementById('formStatus');
+    statusEl.className = 'form-status';
+    statusEl.textContent = '';
+
+    const formData = new FormData(this);
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    fetch('submit_contact_message.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            statusEl.classList.add(data.success ? 'success' : 'error');
+            statusEl.textContent = data.message;
+            if (data.success) document.getElementById('contactForm').reset();
+        })
+        .catch(() => {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            statusEl.classList.add('error');
+            statusEl.textContent = 'Could not send your message. Please check your connection and try again.';
+        });
+});
+</script>
 </body>
 </html>
