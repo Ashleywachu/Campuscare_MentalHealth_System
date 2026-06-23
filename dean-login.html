@@ -569,41 +569,46 @@ const VALID_CREDENTIALS = {
 /*LOGIN LOGIC */
 
 function handleLogin() {
-    const staffId  = document.getElementById('staffIdInput').value.trim();
-    const password = document.getElementById('staffPassInput').value;
-    const errorEl  = document.getElementById('loginError');
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const errorEl  = document.getElementById('errorMsg');
+    const btn      = document.getElementById('loginBtn');
 
-    if (!staffId || !password) {
-        errorEl.textContent = 'Please fill in all fields.';
-        errorEl.style.display = 'block';
+    errorEl.classList.remove('show');
+
+    if (!email || !password) {
+        document.getElementById('errorText').textContent = 'Please fill in all fields.';
+        errorEl.classList.add('show');
         return;
     }
 
+    btn.classList.add('loading');
+    btn.disabled = true;
+
     const formData = new FormData();
-    formData.append('staff_id', staffId);
+    formData.append('email', email);
     formData.append('password', password);
 
-    fetch('counselor-login.php', {
+    fetch('dean-login.php', {
         method: 'POST',
         body: formData
     })
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            // Store in sessionStorage for the portal to read
-            sessionStorage.setItem('cLoggedIn', 'true');
-            sessionStorage.setItem('staffId',    data.staff_id);
-            sessionStorage.setItem('fullname', data.full_name);
-            sessionStorage.setItem('Email', data.email);
-            window.location.href = 'counselor-portal.html';
+            window.location.href = 'dean-portal.php';
         } else {
-            errorEl.textContent = data.message;
-            errorEl.style.display = 'block';
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            document.getElementById('errorText').textContent = data.message || 'Incorrect email or password.';
+            errorEl.classList.add('show');
         }
     })
     .catch(() => {
-        errorEl.textContent = 'Cannot connect to server. Check XAMPP is running.';
-        errorEl.style.display = 'block';
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        document.getElementById('errorText').textContent = 'Cannot connect to server. Check XAMPP is running.';
+        errorEl.classList.add('show');
     });
 }
 

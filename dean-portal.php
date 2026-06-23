@@ -1,3 +1,15 @@
+<?php
+session_start();
+
+// Server-side auth gate
+if (!isset($_SESSION['dLoggedIn']) || $_SESSION['dLoggedIn'] !== true) {
+    header('Location: dean-login.html');
+    exit;
+}
+
+$deanName  = htmlspecialchars($_SESSION['dName'] ?? 'Dean of Students');
+$deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +19,7 @@
 
 <!-- GOOGLE FONTS -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- FONT AWESOME -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -36,9 +48,9 @@
         </div>
 
         <div class="dean-chip">
-            <div class="dean-avatar">ZC</div>
+            <div class="dean-avatar"><?= strtoupper(substr($deanName, 0, 1) . (strpos($deanName, ' ') !== false ? substr($deanName, strpos($deanName, ' ') + 1, 1) : '')) ?></div>
             <div class="dean-info">
-                <h4>Zhang CheLi</h4>
+                <h4><?= $deanName ?></h4>
                 <span>Dean of Students</span>
             </div>
         </div>
@@ -131,7 +143,7 @@
             <!-- WELCOME BANNER -->
             <div class="welcome-banner">
                 <div class="welcome-text">
-                    <h2>Welcome, Sir Zhang CheLi 👋</h2>
+                    <h2>Welcome, <?= $deanName ?> 👋</h2>
                     <p>Here is today's snapshot of student welfare across the university.<br>
                     You have <strong id="alertCount">3</strong> new alerts requiring your attention.</p>
                 </div>
@@ -425,13 +437,13 @@
                 <h3 style="margin-bottom:18px;">Profile Settings</h3>
 
                 <label>Full Name</label>
-                <input type="text" value="Zhang CheLi">
+                <input type="text" value="<?= $deanName ?>">
 
                 <label>Title</label>
                 <input type="text" value="Dean of Students">
 
                 <label>Email Address</label>
-                <input type="email" value="z.cheli@university.edu">
+                <input type="email" value="<?= $deanEmail ?>">
 
                 <label>Change Password</label>
                 <input type="password" placeholder="••••••••">
@@ -544,7 +556,9 @@ function showSection(id, el){
 }
 
 function logout(){
-    window.location.href = 'Home.html';
+    fetch('logout.php').finally(() => {
+        window.location.href = 'dean-login.html';
+    });
 }
 
 /*UTILITIES*/
