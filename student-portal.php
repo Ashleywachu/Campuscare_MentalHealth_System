@@ -144,7 +144,7 @@ $studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.prava
                 <div class="action-icon blue"><i class="fa-solid fa-phone"></i></div>
                 <div class="action-text">
                     <h4>Get Support</h4>
-                    <p>Talk to a counsellor</p>
+                    <p>Talk to a counselor</p>
                 </div>
             </button>
         </div>
@@ -227,7 +227,7 @@ $studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.prava
         <div class="c-card" id="academicWarning" style="display:none; margin-bottom:20px; background:#fff5f5; border:1.5px solid #fecaca; border-radius:16px; padding:18px 22px;">
             <p style="font-size:14px; color:#b91c1c; font-weight:600; display:flex; align-items:center; gap:8px;">
                 <i class="fa-solid fa-triangle-exclamation"></i>
-                Heads up — you have failing units or high absences this semester. Consider reaching out to your counsellor.
+                Heads up — you have failing units or high absences this semester. Consider reaching out to your counselor.
             </p>
         </div>
 
@@ -661,9 +661,22 @@ function loadCounselorRequestStatus() {
                             <p class="profile-sub">Your assigned counselor</p>
                         </div>
                     </div>
-                    <div class="mood-today" style="background:#d1fae5;color:#065f46;">
+                    <div class="mood-today" style="background:#d1fae5;color:#065f46;margin-bottom:16px;">
                         <i class="fa-solid fa-circle-check"></i> You're all set — reach out any time.
-                    </div>`;
+                    </div>
+
+                    <p style="font-size:13px;font-weight:600;color:#4c1d95;margin-bottom:8px;">Book a session</p>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                        <input type="date" id="sessionDateInput" style="flex:1;min-width:130px;padding:9px 10px;border:1.5px solid #e5e0f0;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;">
+                        <input type="time" id="sessionTimeInput" style="flex:1;min-width:110px;padding:9px 10px;border:1.5px solid #e5e0f0;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;">
+                    </div>
+                    <button class="checkin-btn" onclick="bookSession()">
+                        <i class="fa-solid fa-calendar-plus"></i> Book Session
+                    </button>
+
+                    <div id="mySessionsList" style="margin-top:18px;"></div>`;
+                document.getElementById('sessionDateInput').min = new Date().toISOString().slice(0, 10);
+                loadMySessions();
             } else if (r.status === 'declined') {
                 el.innerHTML = `
                     <p style="font-size:14px;color:#666;line-height:1.7;margin-bottom:16px;">
@@ -688,6 +701,63 @@ function requestCounselor() {
             loadCounselorRequestStatus();
         })
         .catch(() => alert('Could not submit your request. Please try again.'));
+}
+
+function bookSession() {
+    const date = document.getElementById('sessionDateInput').value;
+    const time = document.getElementById('sessionTimeInput').value;
+
+    if (!date || !time) {
+        alert('Choose a date and time first.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('session_date', date);
+    formData.append('session_time', time);
+
+    fetch('book_session.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) {
+                document.getElementById('sessionDateInput').value = '';
+                document.getElementById('sessionTimeInput').value = '';
+                loadMySessions();
+            }
+        })
+        .catch(() => alert('Could not book the session. Please try again.'));
+}
+
+function loadMySessions() {
+    fetch('get_my_booked_sessions.php')
+        .then(res => res.json())
+        .then(data => {
+            const el = document.getElementById('mySessionsList');
+            if (!el) return;
+            if (!data.success || !data.sessions.length) {
+                el.innerHTML = '<p style="font-size:13px;color:#aaa;">No sessions booked yet.</p>';
+                return;
+            }
+            const attBadge = {
+                pending:  '<span style="color:#92400e;">Upcoming</span>',
+                attended: '<span style="color:#065f46;">Attended</span>',
+                missed:   '<span style="color:#991b1b;">Missed</span>'
+            };
+            el.innerHTML = `
+                <p style="font-size:13px;font-weight:600;color:#4c1d95;margin-bottom:8px;">Your sessions</p>
+                ${data.sessions.map(s => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0eaf8;font-size:13px;">
+                        <span>${new Date(s.session_date).toLocaleDateString()} · ${s.session_time}</span>
+                        ${attBadge[s.attendance] || s.attendance}
+                    </div>
+                `).join('')}
+            `;
+        })
+        .catch(() => {
+            const el = document.getElementById('mySessionsList');
+            if (el) el.innerHTML = '<p style="font-size:13px;color:#aaa;">Could not load sessions.</p>';
+        });
 }
 
 /* Academic data — calls the real PHP endpoint backed by the grades/attendance tables */

@@ -106,7 +106,7 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
                     <div class="s-label">Students</div>
                 </div>
                 <div class="stat-pill">
-                    <div class="s-num" id="statSessions">5</div>
+                    <div class="s-num" id="statSessions">0</div>
                     <div class="s-label">Sessions Today</div>
                 </div>
                 <div class="stat-pill" style="border-color:rgba(239,68,68,0.4);">
@@ -629,6 +629,10 @@ function loadSessions() {
 }
 
 function renderSessions() {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    document.getElementById('statSessions').textContent =
+        SESSIONS.filter(s => s.session_date === todayStr).length;
+
     if (!SESSIONS.length) {
         document.getElementById('sessionsBody').innerHTML =
             '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No sessions booked yet.</td></tr>';

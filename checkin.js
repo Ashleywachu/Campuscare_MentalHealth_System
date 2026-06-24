@@ -63,7 +63,7 @@ resultMessage =
 }
 else{
 resultMessage =
-"High Risk: The system recommends speaking with a counsellor as soon as possible.";
+"High Risk: The system recommends speaking with a counselor as soon as possible.";
 }
 
 document.getElementById("resultText").innerText =

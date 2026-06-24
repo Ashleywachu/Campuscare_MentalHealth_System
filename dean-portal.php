@@ -228,7 +228,7 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
                 <i class="fa-solid fa-shield-halved"></i>
                 <div>
                     <strong>Privacy protected view.</strong> You can see student names, risk levels, referral status,
-                    and case progress. Detailed therapy notes, private counsellor records, and confidential
+                    and case progress. Detailed therapy notes, private counselor records, and confidential
                     psychiatric information are not accessible at this level.
                 </div>
             </div>
@@ -540,7 +540,7 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
 
         <div class="privacy-notice" style="margin-top:16px; margin-bottom:0;">
             <i class="fa-solid fa-lock"></i>
-            <span>Detailed therapy notes, counsellor session records, and private psychiatric information
+            <span>Detailed therapy notes, counselor session records, and private psychiatric information
             are not available at the Dean of Students level.</span>
         </div>
 
