@@ -129,7 +129,9 @@ body{
 .hero-text h1{
     font-size:65px;
     margin-top:20px;
-    color:#3d1d77;
+    color:#270f4d;
+    font-weight:800;
+    text-shadow:0 2px 14px rgba(255,255,255,0.5);
 }
 
 .hero-text p{
@@ -137,7 +139,9 @@ body{
     max-width:640px;
     font-size:18px;
     line-height:1.8;
-    color:#666;
+    color:#120a1f;
+    font-weight:700;
+    text-shadow:0 2px 12px rgba(255,255,255,0.55);
 }
 
 /* PORTAL CARDS */

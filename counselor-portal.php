@@ -21,6 +21,7 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Counselor Portal | CampusCare</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -64,6 +65,9 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
         </button></li>
         <li><button onclick="switchTab('announcements', this)">
             <i class="fa-solid fa-bullhorn"></i> Announcements
+        </button></li>
+        <li><button onclick="switchTab('postresource', this)">
+            <i class="fa-solid fa-link"></i> Post Resource
         </button></li>
         <li><button onclick="switchTab('profile', this)">
             <i class="fa-solid fa-id-badge"></i> Profile
@@ -294,6 +298,54 @@ $fullTitleName   = trim($counselorTitle . ' ' . $counselorName);
 </div>
 
 
+<!-- POST RESOURCE -->
+<div id="postresource" class="c-page">
+    <div class="c-page-header">
+        <p class="eyebrow">Resource Library</p>
+        <h2>Post a Resource</h2>
+    </div>
+    <div class="c-body" style="margin-top:0; padding-top:0;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+            <div class="c-card">
+                <h3><i class="fa-solid fa-link"></i> Share a Link</h3>
+                <div class="notes-block">
+                    <label style="font-size:13px;font-weight:600;color:#64748b;">Title</label>
+                    <input class="c-input" id="resourceTitle" type="text" placeholder="e.g. 5-Minute Breathing Exercise">
+
+                    <label style="font-size:13px;font-weight:600;color:#64748b;margin-top:10px;display:block;">Type</label>
+                    <select class="c-select" id="resourceType">
+                        <option value="Video">Video (e.g. YouTube)</option>
+                        <option value="Article">Article</option>
+                        <option value="Worksheet">Worksheet</option>
+                        <option value="Audio">Audio</option>
+                        <option value="Link">Other Link</option>
+                    </select>
+
+                    <label style="font-size:13px;font-weight:600;color:#64748b;margin-top:10px;display:block;">Link (URL)</label>
+                    <input class="c-input" id="resourceUrl" type="url" placeholder="https://youtube.com/watch?v=...">
+
+                    <label style="font-size:13px;font-weight:600;color:#64748b;margin-top:10px;display:block;">Description (optional)</label>
+                    <textarea class="c-textarea" id="resourceDescription" placeholder="What is this resource about, and who is it for?"></textarea>
+
+                    <button class="btn btn-teal" onclick="postResource()" style="margin-top:10px;">
+                        <i class="fa-solid fa-plus"></i> Post Resource
+                    </button>
+                </div>
+            </div>
+
+            <div class="c-card">
+                <h3><i class="fa-solid fa-book-open"></i> Resources I've Posted</h3>
+                <div id="myResourcesList">
+                    <p style="font-size:13px;color:#aaa;">Loading…</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
 <!-- PROFILE -->
 <div id="profile" class="c-page">
     <div class="c-page-header">
@@ -420,6 +472,7 @@ function switchTab(id, btn) {
     }
     window.scrollTo(0, 0);
     if (id === 'announcements') loadAnnouncements();
+    if (id === 'postresource') loadMyResources();
 }
 
 /* ANNOUNCEMENTS — read-only, sent by admin/dean */
@@ -446,6 +499,86 @@ function loadAnnouncements() {
             document.getElementById('announcementHistory').innerHTML =
                 '<p style="font-size:13px;color:#aaa;">Could not load announcements.</p>';
         });
+}
+
+/* POST RESOURCE — links to videos, articles, etc. shared with students */
+function postResource() {
+    const title       = document.getElementById('resourceTitle').value.trim();
+    const type        = document.getElementById('resourceType').value;
+    const url         = document.getElementById('resourceUrl').value.trim();
+    const description = document.getElementById('resourceDescription').value.trim();
+
+    if (!title || !url) {
+        showToast('Add a title and a link first.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('resource_type', type);
+    formData.append('url', url);
+    formData.append('description', description);
+
+    fetch('post_resource.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            showToast(data.message || 'Resource posted.');
+            if (data.success) {
+                document.getElementById('resourceTitle').value = '';
+                document.getElementById('resourceUrl').value = '';
+                document.getElementById('resourceDescription').value = '';
+                loadMyResources();
+            }
+        })
+        .catch(() => showToast('Could not post the resource. Please try again.'));
+}
+
+function loadMyResources() {
+    fetch('get_my_resources.php')
+        .then(res => res.json())
+        .then(data => {
+            const el = document.getElementById('myResourcesList');
+            if (!data.success || !data.resources.length) {
+                el.innerHTML = '<p style="font-size:13px;color:#aaa;">No resources posted yet.</p>';
+                return;
+            }
+            const typeIcon = { Video: 'fa-video', Article: 'fa-newspaper', Worksheet: 'fa-file-pen', Audio: 'fa-headphones', Link: 'fa-link' };
+            el.innerHTML = data.resources.map(r => `
+                <div class="note-entry">
+                    <div class="note-meta">
+                        <span><i class="fa-solid ${typeIcon[r.resource_type] || 'fa-link'}"></i> ${r.resource_type}</span>
+                        <span>${new Date(r.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <p style="font-weight:600;margin-bottom:4px;">${r.title}</p>
+                    ${r.description ? `<p style="margin-bottom:6px;">${r.description}</p>` : ''}
+                    <a href="${r.url}" target="_blank" rel="noopener" style="font-size:13px;color:#7c3aed;word-break:break-all;">${r.url}</a>
+                    <div style="margin-top:8px;">
+                        <button class="btn btn-danger btn-sm" onclick="deleteResource(${r.id})">
+                            <i class="fa-solid fa-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById('myResourcesList').innerHTML =
+                '<p style="font-size:13px;color:#aaa;">Could not load resources.</p>';
+        });
+}
+
+function deleteResource(resourceId) {
+    if (!confirm('Remove this resource?')) return;
+
+    const formData = new FormData();
+    formData.append('resource_id', resourceId);
+
+    fetch('delete_resource.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            showToast(data.message || 'Resource removed.');
+            if (data.success) loadMyResources();
+        })
+        .catch(() => showToast('Could not remove the resource.'));
 }
 
 /* RENDER HELPERS */
@@ -847,14 +980,25 @@ function markAttendance(sessionId, status) {
 function handleAvatarUpload(input) {
     const file = input.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-        const src = e.target.result;
-        // Local-only preview for now — wiring this to a real avatar-upload.php
-        // (saving to counselors.avatar_url) is a good follow-up piece.
-        ['heroAvatar','navAvatar','profileAvatarPreview'].forEach(el => { document.getElementById(el).src = src; });
-    };
-    reader.readAsDataURL(file);
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    fetch('upload_avatar.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const src = data.avatar + '?t=' + Date.now();
+                ['heroAvatar', 'navAvatar', 'profileAvatarPreview'].forEach(el => {
+                    const node = document.getElementById(el);
+                    if (node) node.src = src;
+                });
+                showToast('Profile picture updated.');
+            } else {
+                showToast(data.message || 'Could not upload the image.');
+            }
+        })
+        .catch(() => showToast('Could not upload the image. Please try again.'));
 }
 
 function saveProfile() {

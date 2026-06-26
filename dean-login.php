@@ -2,6 +2,7 @@
 
 session_start();
 require 'db.php';
+require 'login_logger.php';
 
 header('Content-Type: application/json');
 
@@ -35,6 +36,9 @@ if ($dean && password_verify($password, $dean['password'])) {
     $_SESSION['dId']       = $dean['staff_id'];
     $_SESSION['dName']     = $dean['full_name'];
     $_SESSION['dEmail']    = $dean['email'];
+    $_SESSION['dAvatar']   = $dean['avatar_url'] ?? '';
+
+    log_login_attempt($pdo, 'dean', $email, $dean['full_name'], true);
 
     echo json_encode([
         'success'  => true,
@@ -44,6 +48,8 @@ if ($dean && password_verify($password, $dean['password'])) {
     ]);
 
 } else {
+    log_login_attempt($pdo, 'dean', $email, $dean['full_name'] ?? null, false);
+
     echo json_encode(['success' => false, 'message' => 'Incorrect email or password.']);
 }
 ?>

@@ -17,6 +17,7 @@ $studentAvatar    = htmlspecialchars($_SESSION['userAvatar'] ?? 'https://i.prava
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Portal | CampusCare</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -547,17 +548,24 @@ function loadAffirmation() {
 function handleAvatarUpload(input) {
     const file = input.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-        const src = e.target.result;
-        // Local-only preview for now — wiring this to a real avatar-upload.php
-        // (saving to students.avatar_url) is a good follow-up piece.
-        ['profilePreview', 'settingsAvatar', 'navAvatar', 'greetingAvatar'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.src = src;
-        });
-    };
-    reader.readAsDataURL(file);
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    fetch('upload_avatar.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const src = data.avatar + '?t=' + Date.now();
+                ['profilePreview', 'settingsAvatar', 'navAvatar', 'greetingAvatar'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.src = src;
+                });
+            } else {
+                alert(data.message || 'Could not upload the image.');
+            }
+        })
+        .catch(() => alert('Could not upload the image. Please try again.'));
 }
 
 function saveProfile() {
@@ -868,8 +876,10 @@ function sobrietyBreakdown(startIso) {
     return { months, weeks, days, hours, minutes };
 }
 
+const SOBRIETY_KEY = 'sobrietyStartDate_<?= $studentAdmission ?>';
+
 function renderSobrietyCounter(overrideMessage) {
-    const startIso = localStorage.getItem('sobrietyStartDate');
+    const startIso = localStorage.getItem(SOBRIETY_KEY);
     const area = document.getElementById('sobrietyArea');
 
     if (!startIso) {
@@ -903,7 +913,7 @@ function renderSobrietyCounter(overrideMessage) {
 }
 
 function startSobrietyTracker(answer) {
-    localStorage.setItem('sobrietyStartDate', new Date().toISOString());
+    localStorage.setItem(SOBRIETY_KEY, new Date().toISOString());
     const message = answer === 'yes'
         ? 'It takes courage to be honest. Today can be day one — you\'ve got this.'
         : 'Great! Let\'s start tracking your substance-free journey from today.';
@@ -912,15 +922,15 @@ function startSobrietyTracker(answer) {
 
 function resetSobrietyTracker() {
     if (!confirm('Reset your counter back to zero? That\'s okay — every day is a new start.')) return;
-    localStorage.setItem('sobrietyStartDate', new Date().toISOString());
+    localStorage.setItem(SOBRIETY_KEY, new Date().toISOString());
     renderSobrietyCounter('It\'s okay. Recovery isn\'t a straight line — today is a fresh start.');
 }
 
 function loadSobrietyTracker() {
     renderSobrietyCounter();
     setInterval(() => {
-        if (localStorage.getItem('sobrietyStartDate') && document.getElementById('sobrietyArea')) {
-            const startIso = localStorage.getItem('sobrietyStartDate');
+        if (localStorage.getItem(SOBRIETY_KEY) && document.getElementById('sobrietyArea')) {
+            const startIso = localStorage.getItem(SOBRIETY_KEY);
             const t = sobrietyBreakdown(startIso);
             const unitEls = document.querySelectorAll('.sobriety-unit span');
             if (unitEls.length === 5) {

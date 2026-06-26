@@ -9,6 +9,7 @@ if (!isset($_SESSION['adminLoggedIn']) || $_SESSION['adminLoggedIn'] !== true) {
 
 $adminName = htmlspecialchars($_SESSION['adminName'] ?? 'Admin User');
 $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
+$adminAvatar = htmlspecialchars($_SESSION['adminAvatar'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,6 +17,7 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Portal | CampusCare</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -128,9 +130,9 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
 
         </div>
 
-        <div class="alert">
+        <div class="alert" id="securityAlertCard" style="display:none;">
             <h3>Security alert</h3>
-            <p>3 unauthorized login attempts were detected in the last 24 hours.</p>
+            <p id="securityAlertText"></p>
             <button class="btn danger small" onclick="showSection('logins')">View login activity</button>
         </div>
 
@@ -168,7 +170,7 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
             </div>
             <div class="card">
                 <div class="label">Failed Attempts (24h)</div>
-                <div class="value bad">3</div>
+                <div class="value bad" id="statFailedLogins">0</div>
             </div>
         </div>
 
@@ -264,6 +266,7 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
                         <tr>
                             <th>Title</th>
                             <th>Type</th>
+                            <th>Link</th>
                             <th>Added</th>
                             <th>Action</th>
                         </tr>
@@ -274,25 +277,29 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
         </div>
 
         <div class="panel">
-            <h3>Upload a new resource</h3>
-            <p class="panel-sub">Share a guide, video, or worksheet with students.</p>
+            <h3>Post a new resource</h3>
+            <p class="panel-sub">Share a link — YouTube video, article, worksheet — with students.</p>
 
             <label>Title</label>
             <input type="text" id="resourceTitle" placeholder="e.g. Managing exam stress">
 
             <label>Type</label>
             <select id="resourceType">
-                <option>Article</option>
-                <option>Video</option>
-                <option>Worksheet</option>
-                <option>Audio</option>
+                <option value="Article">Article</option>
+                <option value="Video">Video (e.g. YouTube)</option>
+                <option value="Worksheet">Worksheet</option>
+                <option value="Audio">Audio</option>
+                <option value="Link">Other Link</option>
             </select>
 
-            <label>File</label>
-            <input type="file" id="resourceFile">
+            <label>Link (URL)</label>
+            <input type="url" id="resourceUrl" placeholder="https://youtube.com/watch?v=...">
+
+            <label>Description (optional)</label>
+            <textarea id="resourceDescription" rows="3" placeholder="What is this resource about?"></textarea>
 
             <div class="btn-row" style="margin-top:18px">
-                <button class="btn primary" onclick="uploadResource()">Upload resource</button>
+                <button class="btn primary" onclick="uploadResource()">Post resource</button>
             </div>
         </div>
 
@@ -386,6 +393,18 @@ $adminEmail = htmlspecialchars($_SESSION['adminEmail'] ?? '');
 
         <div class="panel" style="max-width:480px">
             <h3>Admin profile</h3>
+
+            <div class="avatar-upload-row" style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+                <img id="profileAvatarPreview" src="<?= $adminAvatar ?: 'https://i.pravatar.cc/80?img=12' ?>"
+                     alt="Profile" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);">
+                <div>
+                    <label class="btn ghost small" for="avatarInput" style="cursor:pointer;display:inline-block;">
+                        <i class="fa-solid fa-camera"></i> Change photo
+                    </label>
+                    <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="uploadAvatar(this)">
+                    <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">JPG, PNG, WEBP or GIF — max 2MB</p>
+                </div>
+            </div>
 
             <label>Full name</label>
             <input type="text" value="<?= $adminName ?>">

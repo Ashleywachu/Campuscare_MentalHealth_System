@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resources | CampusCare</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -202,32 +203,32 @@
     </div>
 
     <div class="articles-grid">
-        <div class="article-card">
+        <div class="article-card" id="article-anxiety">
             <span class="tag">Anxiety</span>
             <h3>Understanding Anxiety</h3>
             <p>Learn the most common anxiety triggers, how your body responds to stress, and practical coping strategies you can use right now.</p>
-            <a href="#" class="read-link">Read article <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="javascript:void(0)" class="read-link" onclick="openArticle('anxiety')">Read article <i class="fa-solid fa-arrow-right"></i></a>
         </div>
 
-        <div class="article-card">
+        <div class="article-card" id="article-academic">
             <span class="tag">Academic Stress</span>
             <h3>Managing Academic Stress</h3>
             <p>Practical, student-tested ways to balance studies, deadlines, and personal wellbeing without burning out.</p>
-            <a href="#" class="read-link">Read article <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="javascript:void(0)" class="read-link" onclick="openArticle('academic')">Read article <i class="fa-solid fa-arrow-right"></i></a>
         </div>
 
-        <div class="article-card">
+        <div class="article-card" id="article-resilience">
             <span class="tag">Resilience</span>
             <h3>Building Emotional Resilience</h3>
             <p>Develop the emotional strength to recover from setbacks, handle uncertainty, and keep moving forward.</p>
-            <a href="#" class="read-link">Read article <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="javascript:void(0)" class="read-link" onclick="openArticle('resilience')">Read article <i class="fa-solid fa-arrow-right"></i></a>
         </div>
 
-        <div class="article-card">
+        <div class="article-card" id="article-sleep">
             <span class="tag">Sleep</span>
             <h3>Sleep &amp; Mental Health</h3>
             <p>Understand how poor sleep affects your mood, memory, and focus — and simple habits to protect your rest.</p>
-            <a href="#" class="read-link">Read article <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="javascript:void(0)" class="read-link" onclick="openArticle('sleep')">Read article <i class="fa-solid fa-arrow-right"></i></a>
         </div>
     </div>
 </section>
@@ -284,12 +285,136 @@
     </button>
 </div>
 
+<!-- ── ARTICLE MODAL ────────────────────────────────────────── -->
+<div class="article-modal-overlay" id="articleModalOverlay" onclick="if(event.target===this) closeArticle()">
+    <div class="article-modal">
+        <button class="article-modal-close" onclick="closeArticle()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <span class="tag" id="articleModalTag"></span>
+        <h2 id="articleModalTitle"></h2>
+        <div id="articleModalBody"></div>
+    </div>
+</div>
+
 <!-- ── FOOTER ───────────────────────────────────────────────── -->
 <footer>
     <p>&copy; 2026 CampusCare — Mental Health Early Support System. All rights reserved.</p>
 </footer>
 
 <script>
+    const ARTICLES = {
+        anxiety: {
+            tag: 'Anxiety',
+            title: 'Understanding Anxiety',
+            body: `
+                <p>Anxiety is your body's natural alarm system. It shows up as a racing heart, tight chest,
+                restless thoughts, or the urge to avoid a situation altogether — usually right before an exam,
+                a presentation, or a hard conversation.</p>
+                <p><strong>Common triggers:</strong> looming deadlines, public speaking, financial pressure,
+                uncertainty about the future, and social situations.</p>
+                <p><strong>What's happening in your body:</strong> your nervous system floods you with
+                adrenaline and cortisol, sharpening focus but also speeding up your heart rate and breathing —
+                which is why anxiety can feel physical, not just "in your head."</p>
+                <p><strong>Try this right now:</strong></p>
+                <ul>
+                    <li>Box breathing — inhale 4 seconds, hold 4, exhale 4, hold 4. Repeat five times.</li>
+                    <li>Name what you're feeling out loud or in writing — labelling an emotion lowers its intensity.</li>
+                    <li>Ground yourself: name 5 things you can see, 4 you can touch, 3 you can hear.</li>
+                </ul>
+                <p>If anxiety is showing up most days and getting in the way of class, sleep, or relationships,
+                that's worth talking to a counselor about — not something you have to push through alone.</p>
+            `
+        },
+        academic: {
+            tag: 'Academic Stress',
+            title: 'Managing Academic Stress',
+            body: `
+                <p>Academic stress builds when workload, expectations, and time all feel out of your control
+                at once. The goal isn't to eliminate pressure entirely — it's to stop it from compounding.</p>
+                <p><strong>Practical ways to balance it:</strong></p>
+                <ul>
+                    <li>Break assignments into 25–45 minute focus blocks rather than open-ended "study sessions."</li>
+                    <li>Write down everything due this week — an unclear mental list is heavier than a written one.</li>
+                    <li>Protect one fixed thing each day (a meal, a walk, sleep time) that deadlines don't get to move.</li>
+                    <li>Talk to a lecturer or counselor early if you're falling behind — it's easier to fix a 2-week
+                    problem than a 2-day one.</li>
+                </ul>
+                <p>Burnout usually isn't caused by one hard week — it's caused by never getting a real break between
+                hard weeks. Build small recovery moments in on purpose, don't wait for free time to appear.</p>
+            `
+        },
+        resilience: {
+            tag: 'Resilience',
+            title: 'Building Emotional Resilience',
+            body: `
+                <p>Resilience isn't about not feeling setbacks — it's about how quickly and how kindly you recover
+                from them. It's a skill you build, not a trait you either have or don't.</p>
+                <p><strong>Ways to build it over time:</strong></p>
+                <ul>
+                    <li>Reframe setbacks as information, not verdicts — a failed test tells you what to study next,
+                    not who you are.</li>
+                    <li>Keep a short list of past hard moments you got through — proof you can handle hard things.</li>
+                    <li>Build a support system before you need one: people you can actually call when things go wrong.</li>
+                    <li>Practice self-compassion — talk to yourself the way you'd talk to a friend going through
+                    the same thing.</li>
+                </ul>
+                <p>Resilience grows fastest with support, not in isolation. Leaning on a counselor, friend, or
+                mentor during a hard stretch is part of building resilience — not a sign you lack it.</p>
+            `
+        },
+        sleep: {
+            tag: 'Sleep',
+            title: 'Sleep & Mental Health',
+            body: `
+                <p>Sleep and mood are directly linked — poor sleep doesn't just make you tired, it amplifies
+                anxiety, lowers your ability to regulate emotions, and makes ordinary stress feel bigger than it is.</p>
+                <p><strong>What poor sleep affects:</strong></p>
+                <ul>
+                    <li>Memory and focus — making studying take longer and stick less.</li>
+                    <li>Emotional regulation — small frustrations feel much larger after a bad night.</li>
+                    <li>Anxiety and low mood — both tend to intensify with consistent sleep debt.</li>
+                </ul>
+                <p><strong>Simple habits that help:</strong></p>
+                <ul>
+                    <li>Keep a consistent wake-up time, even on weekends — it anchors your body clock more than
+                    bedtime does.</li>
+                    <li>Dim screens and bright lights 30–60 minutes before bed.</li>
+                    <li>If your mind is racing, write tomorrow's to-do list down — it gets the thoughts out of your head.</li>
+                    <li>Avoid caffeine in the second half of the day.</li>
+                </ul>
+                <p>If you're consistently struggling to sleep despite good habits, or sleep issues are tied to
+                anxiety or low mood, that's worth raising with a counselor too.</p>
+            `
+        }
+    };
+
+    function openArticle(id) {
+        const a = ARTICLES[id];
+        if (!a) return;
+        document.getElementById('articleModalTag').textContent = a.tag;
+        document.getElementById('articleModalTitle').textContent = a.title;
+        document.getElementById('articleModalBody').innerHTML = a.body;
+        document.getElementById('articleModalOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeArticle() {
+        document.getElementById('articleModalOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    // Deep-link support: visiting Resources.html#article-anxiety opens that article directly
+    if (location.hash.startsWith('#article-')) {
+        const id = location.hash.replace('#article-', '');
+        document.getElementById('article-' + id)?.scrollIntoView();
+        openArticle(id);
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeArticle();
+    });
+
     const affirmations = [
         "You are not defined by your struggles — you are shaped by how you rise from them.",
         "Progress, not perfection. Every small step matters.",

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require 'db.php';
+require 'login_logger.php';
 
 header('Content-Type: application/json');
 
@@ -28,8 +29,12 @@ if ($student && password_verify($password, $student['password'])) {
     $_SESSION['admissionNo'] = $student['admission_no'];
     $_SESSION['userAvatar']  = $student['avatar_url'];
 
+    log_login_attempt($pdo, 'student', $admission, $student['full_name'], true);
+
     echo json_encode(['success' => true, 'name' => $student['full_name'], 'avatar' => $student['avatar_url'] ?? '']);
 } else {
+    log_login_attempt($pdo, 'student', $admission, $student['full_name'] ?? null, false);
+
     echo json_encode(['success' => false, 'message' => 'Incorrect admission number or password.']);
 }
 ?>

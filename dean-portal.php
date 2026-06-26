@@ -7,8 +7,9 @@ if (!isset($_SESSION['dLoggedIn']) || $_SESSION['dLoggedIn'] !== true) {
     exit;
 }
 
-$deanName  = htmlspecialchars($_SESSION['dName'] ?? 'Dean of Students');
-$deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
+$deanName   = htmlspecialchars($_SESSION['dName'] ?? 'Dean of Students');
+$deanEmail  = htmlspecialchars($_SESSION['dEmail'] ?? '');
+$deanAvatar = htmlspecialchars($_SESSION['dAvatar'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,6 +17,7 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dean of Students Portal | CampusCare</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 
 <!-- GOOGLE FONTS -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,7 +50,11 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
         </div>
 
         <div class="dean-chip">
-            <div class="dean-avatar"><?= strtoupper(substr($deanName, 0, 1) . (strpos($deanName, ' ') !== false ? substr($deanName, strpos($deanName, ' ') + 1, 1) : '')) ?></div>
+            <?php if ($deanAvatar): ?>
+                <img id="deanAvatarSidebar" class="dean-avatar" src="<?= $deanAvatar ?>" alt="Profile" style="object-fit:cover;">
+            <?php else: ?>
+                <div id="deanAvatarSidebar" class="dean-avatar"><?= strtoupper(substr($deanName, 0, 1) . (strpos($deanName, ' ') !== false ? substr($deanName, strpos($deanName, ' ') + 1, 1) : '')) ?></div>
+            <?php endif; ?>
             <div class="dean-info">
                 <h4><?= $deanName ?></h4>
                 <span>Dean of Students</span>
@@ -401,36 +407,23 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
                 <label>Resource Title</label>
                 <input type="text" id="resTitle" placeholder="e.g. Exam Stress Toolkit">
 
+                <label>Type</label>
+                <select id="resType">
+                    <option value="Video">Video (e.g. YouTube)</option>
+                    <option value="Article">Article</option>
+                    <option value="Worksheet">Worksheet</option>
+                    <option value="Audio">Audio</option>
+                    <option value="Link">Other Link</option>
+                </select>
+
+                <label>Link (URL)</label>
+                <input type="url" id="resUrl" placeholder="https://youtube.com/watch?v=...">
+
                 <label>Description</label>
                 <textarea id="resDesc" rows="3" placeholder="Brief description of what this resource covers..."></textarea>
 
-                <div class="form-grid-2">
-                    <div>
-                        <label>Category</label>
-                        <select id="resCategory">
-                            <option>Stress &amp; Anxiety</option>
-                            <option>Academic Support</option>
-                            <option>Crisis Support</option>
-                            <option>Mindfulness</option>
-                            <option>General Wellness</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Audience</label>
-                        <select id="resAudience">
-                            <option>All Students</option>
-                            <option>High Risk Students</option>
-                            <option>Counselors</option>
-                            <option>Staff</option>
-                        </select>
-                    </div>
-                </div>
-
-                <label>File (PDF, image, document)</label>
-                <input type="file" id="resFile">
-
                 <button class="btn btn-primary" style="margin-top:4px;" onclick="postResource()">
-                    <i class="fa-solid fa-upload"></i> Post Resource
+                    <i class="fa-solid fa-plus"></i> Post Resource
                 </button>
             </div>
 
@@ -504,6 +497,18 @@ $deanEmail = htmlspecialchars($_SESSION['dEmail'] ?? '');
             <div class="card" style="max-width:460px;">
                 <h3 style="margin-bottom:18px;">Profile Settings</h3>
 
+                <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+                    <img id="profileAvatarPreview" src="<?= $deanAvatar ?: 'https://i.pravatar.cc/80?img=47' ?>"
+                         alt="Profile" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--purple-600);">
+                    <div>
+                        <label class="btn btn-ghost btn-sm" for="avatarInput" style="cursor:pointer;display:inline-block;">
+                            <i class="fa-solid fa-camera"></i> Change photo
+                        </label>
+                        <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="uploadAvatar(this)">
+                        <p style="font-size:11px;color:var(--muted);margin-top:6px;">JPG, PNG, WEBP or GIF — max 2MB</p>
+                    </div>
+                </div>
+
                 <label>Full Name</label>
                 <input type="text" value="<?= $deanName ?>">
 
@@ -565,8 +570,6 @@ let students = [];
 let alerts = [];
 let reminders = [];
 
-const resources = [];
-
 function loadReferrals(){
     fetch('get_dean_referrals.php')
         .then(res => res.json())
@@ -626,6 +629,32 @@ function logout(){
     fetch('logout.php').finally(() => {
         window.location.href = 'dean-login.html';
     });
+}
+
+/* PROFILE PICTURE */
+function uploadAvatar(input){
+    const file = input.files[0];
+    if(!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    fetch('upload_avatar.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                const src = data.avatar + '?t=' + Date.now();
+                document.getElementById('profileAvatarPreview').src = src;
+
+                const sidebarAvatar = document.getElementById('deanAvatarSidebar');
+                sidebarAvatar.outerHTML = `<img id="deanAvatarSidebar" class="dean-avatar" src="${src}" alt="Profile" style="object-fit:cover;">`;
+
+                showToast('Profile picture updated', 'fa-check');
+            } else {
+                showToast(data.message || 'Could not upload the image.', 'fa-circle-exclamation');
+            }
+        })
+        .catch(() => showToast('Could not upload the image.', 'fa-circle-exclamation'));
 }
 
 /* ANNOUNCEMENTS — live, shared across all portals */
@@ -1056,57 +1085,85 @@ function markDone(idx){
     renderDashboard();
 }
 
-/*RESOURCES*/
+/*RESOURCES — live, posted with a real link (YouTube, articles, etc.)*/
 
 function postResource(){
-    const title    = document.getElementById('resTitle').value.trim();
-    const desc     = document.getElementById('resDesc').value.trim();
-    const category = document.getElementById('resCategory').value;
-    const audience = document.getElementById('resAudience').value;
+    const title = document.getElementById('resTitle').value.trim();
+    const type  = document.getElementById('resType').value;
+    const url   = document.getElementById('resUrl').value.trim();
+    const desc  = document.getElementById('resDesc').value.trim();
 
-    if(!title){
-        showToast('Give the resource a title first', 'fa-circle-exclamation');
+    if(!title || !url){
+        showToast('Add a title and a link first', 'fa-circle-exclamation');
         return;
     }
 
-    resources.unshift({ title, desc: desc || 'No description.', category, audience, date: todayStr() });
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('resource_type', type);
+    formData.append('url', url);
+    formData.append('description', desc);
 
-    document.getElementById('resTitle').value = '';
-    document.getElementById('resDesc').value = '';
-    document.getElementById('resFile').value = '';
-
-    renderResources();
-    showToast('Resource posted to the hub', 'fa-upload');
+    fetch('post_resource.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                document.getElementById('resTitle').value = '';
+                document.getElementById('resUrl').value = '';
+                document.getElementById('resDesc').value = '';
+                loadMyResources();
+                showToast('Resource posted', 'fa-upload');
+            } else {
+                showToast(data.message || 'Could not post resource', 'fa-circle-exclamation');
+            }
+        })
+        .catch(() => showToast('Could not post resource', 'fa-circle-exclamation'));
 }
 
-function renderResources(){
-    const list = document.getElementById('resourcesList');
-
-    if(!resources.length){
-        list.innerHTML = '<p style="color:var(--muted); font-size:13px;">No resources posted yet.</p>';
-        return;
-    }
-
-    list.innerHTML = resources.map((r, i) => `
-        <div class="resource-item">
-            <div class="resource-icon"><i class="fa-solid fa-book-open"></i></div>
-            <div style="flex:1;">
-                <h4>${r.title}</h4>
-                <p>${r.desc}</p>
-                <p class="meta">${r.category} · For ${r.audience} · Posted ${r.date}</p>
-            </div>
-            <button class="icon-btn" onclick="deleteResource(${i})" title="Remove">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </div>
-    `).join('');
+function loadMyResources(){
+    fetch('get_my_resources.php')
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('resourcesList');
+            if(!data.success || !data.resources.length){
+                list.innerHTML = '<p style="color:var(--muted); font-size:13px;">No resources posted yet.</p>';
+                return;
+            }
+            const typeIcon = { Video:'fa-video', Article:'fa-newspaper', Worksheet:'fa-file-pen', Audio:'fa-headphones', Link:'fa-link' };
+            list.innerHTML = data.resources.map(r => `
+                <div class="resource-item">
+                    <div class="resource-icon"><i class="fa-solid ${typeIcon[r.resource_type] || 'fa-link'}"></i></div>
+                    <div style="flex:1;">
+                        <h4>${r.title}</h4>
+                        ${r.description ? `<p>${r.description}</p>` : ''}
+                        <a href="${r.url}" target="_blank" rel="noopener" style="font-size:13px;color:var(--purple-600);word-break:break-all;">${r.url}</a>
+                        <p class="meta">${r.resource_type} · Posted ${new Date(r.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <button class="icon-btn" onclick="deleteResource(${r.id})" title="Remove">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById('resourcesList').innerHTML =
+                '<p style="color:var(--muted); font-size:13px;">Could not load resources.</p>';
+        });
 }
 
-function deleteResource(idx){
-    if(!confirm(`Remove "${resources[idx].title}"?`)) return;
-    resources.splice(idx, 1);
-    renderResources();
-    showToast('Resource removed', 'fa-trash');
+function deleteResource(resourceId){
+    if(!confirm('Remove this resource?')) return;
+
+    const formData = new FormData();
+    formData.append('resource_id', resourceId);
+
+    fetch('delete_resource.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            showToast(data.message || 'Resource removed', 'fa-trash');
+            if(data.success) loadMyResources();
+        })
+        .catch(() => showToast('Could not remove resource', 'fa-circle-exclamation'));
 }
 
 /*REPORTS & TRENDS*/
@@ -1259,7 +1316,7 @@ function init(){
 
     loadReferrals(); // fetches real students/alerts data, then calls renderDashboard/renderStudents/renderCases/populateReminderSelect
     renderAllReminders();
-    renderResources();
+    loadMyResources();
 }
 
 init();

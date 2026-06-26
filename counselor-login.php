@@ -2,6 +2,7 @@
 
 session_start();
 require 'db.php';
+require 'login_logger.php';
 
 header('Content-Type: application/json');
 
@@ -39,6 +40,8 @@ if ($counselor && password_verify($password, $counselor['password'])) {
     $_SESSION['cDept']     = $counselor['department'];
     $_SESSION['cAvatar']   = $counselor['avatar_url'] ?? '';
 
+    log_login_attempt($pdo, 'counselor', $staff_id, $counselor['full_name'], true);
+
     echo json_encode([
         'success' => true,
         'name'    => $counselor['full_name'],
@@ -50,6 +53,8 @@ if ($counselor && password_verify($password, $counselor['password'])) {
     ]);
 
 } else {
+    log_login_attempt($pdo, 'counselor', $staff_id, $counselor['full_name'] ?? null, false);
+
     // Wrong staff ID or wrong password — same message for both (security best practice)
     echo json_encode(['success' => false, 'message' => 'Incorrect Staff ID or password.']);
 }

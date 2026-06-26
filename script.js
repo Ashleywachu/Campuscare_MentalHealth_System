@@ -52,11 +52,17 @@ function showSection(section){
     if(section === "users"){
         loadUsers();
     }
+    if(section === "logins"){
+        loadLoginActivity();
+    }
     if(section === "announcements"){
         loadAnnouncements();
     }
     if(section === "messages"){
         loadContactMessages();
+    }
+    if(section === "resources"){
+        loadMyResources();
     }
 }
 
@@ -158,89 +164,129 @@ function renderStats(){
     deactivatedCircle.setAttribute("stroke-dashoffset", `${-activeLen}`);
 }
 
-/*RENDER: LOGINS*/
+/*LOGIN ACTIVITY — live data from login_logs, records every real login attempt*/
 
-function renderLogins(){
-    const body = document.getElementById("loginTableBody");
-    body.innerHTML = "";
+function loadLoginActivity(){
+    fetch('get_login_activity.php')
+        .then(res => res.json())
+        .then(data => {
+            const body = document.getElementById("loginTableBody");
 
-    if(!logins.length){
-        body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No login activity recorded yet.</td></tr>';
-        document.getElementById("statLoginsToday").textContent = 0;
-        return;
-    }
+            if(!data.success){
+                body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Could not load login activity.</td></tr>';
+                return;
+            }
 
-    logins.forEach(l=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${l.name}</td>
-            <td>${l.role}</td>
-            <td class="time">${l.time}</td>
-            <td>${l.device}</td>
-        `;
-        body.appendChild(tr);
-    });
+            logins = data.recent;
+            document.getElementById("statLoginsToday").textContent = data.logins_today;
+            document.getElementById("statFailedLogins").textContent = data.failed_24h;
 
-    const todayCount = logins.filter(l=>l.time.startsWith("Jun 18")).length;
-    document.getElementById("statLoginsToday").textContent = todayCount;
+            const alertCard = document.getElementById("securityAlertCard");
+            if(data.failed_24h > 0){
+                alertCard.style.display = "block";
+                document.getElementById("securityAlertText").textContent =
+                    `${data.failed_24h} failed login attempt${data.failed_24h !== 1 ? "s" : ""} detected in the last 24 hours.`;
+            } else {
+                alertCard.style.display = "none";
+            }
+
+            if(!logins.length){
+                body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No login activity recorded yet.</td></tr>';
+                return;
+            }
+
+            body.innerHTML = logins.map(l => `
+                <tr>
+                    <td>${l.display_name || l.identifier}</td>
+                    <td>${l.role.charAt(0).toUpperCase() + l.role.slice(1)}</td>
+                    <td class="time">${new Date(l.created_at).toLocaleString()}</td>
+                    <td>${l.success ? l.device : `<span class="badge deactivated">Failed</span> ${l.device}`}</td>
+                </tr>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById("loginTableBody").innerHTML =
+                '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">Could not load login activity.</td></tr>';
+        });
 }
 
-/*RENDER: RESOURCES*/
+/*RESOURCES — live, posted with a real link (YouTube, articles, etc.)*/
 
-function renderResources(){
-    const body = document.getElementById("resourceTableBody");
-    body.innerHTML = "";
-
-    if(!resources.length){
-        body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No resources published yet.</td></tr>';
-        return;
-    }
-
-    resources.forEach((r,i)=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${r.title}</td>
-            <td>${r.type}</td>
-            <td class="time">${r.added}</td>
-            <td>
-                <div class="row-actions">
-                    <button class="btn ghost small" onclick="editResource(${i})">Edit</button>
-                    <button class="btn danger small" onclick="deleteResource(${i})">Delete</button>
-                </div>
-            </td>
-        `;
-        body.appendChild(tr);
-    });
+function loadMyResources(){
+    fetch('get_my_resources.php')
+        .then(res => res.json())
+        .then(data => {
+            const body = document.getElementById("resourceTableBody");
+            if(!data.success || !data.resources.length){
+                body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">No resources published yet.</td></tr>';
+                return;
+            }
+            resources = data.resources;
+            body.innerHTML = resources.map(r => `
+                <tr>
+                    <td>${r.title}</td>
+                    <td>${r.resource_type}</td>
+                    <td><a href="${r.url}" target="_blank" rel="noopener" style="color:var(--accent);">${r.url}</a></td>
+                    <td class="time">${new Date(r.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <div class="row-actions">
+                            <button class="btn danger small" onclick="deleteResource(${r.id})">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        })
+        .catch(() => {
+            document.getElementById("resourceTableBody").innerHTML =
+                '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Could not load resources.</td></tr>';
+        });
 }
 
 function uploadResource(){
     const title = document.getElementById("resourceTitle").value.trim();
     const type = document.getElementById("resourceType").value;
+    const url = document.getElementById("resourceUrl").value.trim();
+    const description = document.getElementById("resourceDescription").value.trim();
 
-    if(!title){
-        alert("Add a title before uploading.");
+    if(!title || !url){
+        alert("Add a title and a link first.");
         return;
     }
 
-    const today = new Date().toLocaleDateString(undefined,{month:"short", day:"numeric", year:"numeric"});
-    resources.unshift({ title, type, added: today });
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('resource_type', type);
+    formData.append('url', url);
+    formData.append('description', description);
 
-    document.getElementById("resourceTitle").value = "";
-    document.getElementById("resourceFile").value = "";
-    renderResources();
+    fetch('post_resource.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                document.getElementById("resourceTitle").value = "";
+                document.getElementById("resourceUrl").value = "";
+                document.getElementById("resourceDescription").value = "";
+                loadMyResources();
+            } else {
+                alert(data.message || "Could not post the resource.");
+            }
+        })
+        .catch(() => alert("Could not post the resource. Please try again."));
 }
 
-function editResource(i){
-    const title = prompt("Resource title:", resources[i].title);
-    if(!title) return;
-    resources[i].title = title;
-    renderResources();
-}
+function deleteResource(resourceId){
+    if(!confirm("Remove this resource?")) return;
 
-function deleteResource(i){
-    if(!confirm(`Remove "${resources[i].title}"?`)) return;
-    resources.splice(i,1);
-    renderResources();
+    const formData = new FormData();
+    formData.append('resource_id', resourceId);
+
+    fetch('delete_resource.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) loadMyResources();
+            else alert(data.message || "Could not remove the resource.");
+        })
+        .catch(() => alert("Could not remove the resource. Please try again."));
 }
 
 /*COUNSELOR ASSIGNMENT — live data from counselor_requests via PHP*/
@@ -376,7 +422,7 @@ function assignCounselor(requestId){
 function generateReport(){
     const active = users.length;
     const deactivated = 0;
-    const todayCount = logins.filter(l=>l.time.startsWith("Jun 18")).length;
+    const todayCount = parseInt(document.getElementById("statLoginsToday").textContent, 10) || 0;
     const pendingCount = parseInt(document.getElementById("statPending").textContent, 10) || 0;
 
     document.getElementById("repTotal").textContent = users.length;
@@ -524,10 +570,31 @@ new Chart(document.getElementById("uptimeChart"), {
     }
 });
 
+/*PROFILE PICTURE*/
+
+function uploadAvatar(input){
+    const file = input.files[0];
+    if(!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    fetch('upload_avatar.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                document.getElementById('profileAvatarPreview').src = data.avatar + '?t=' + Date.now();
+            } else {
+                alert(data.message || 'Could not upload the image.');
+            }
+        })
+        .catch(() => alert('Could not upload the image. Please try again.'));
+}
+
 /*INIT */
 
 loadUsers(); // populates the Users tab + dashboard stats with real DB counts
-renderLogins();
-renderResources();
+loadLoginActivity();
+loadMyResources();
 loadCounselorRequests(); // populates statPending + assignments tab even before it's opened
 loadAnnouncements();
